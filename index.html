@@ -4,24 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Karaoke Song List</title>
+  <!-- Tiny emoji favicon so browser stops 404 -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
   <style>
-    body {
-      margin:0; font-family: Arial, sans-serif;
-      background:#0f1720; color:#f8fafc;
-      display:flex; flex-direction:column; min-height:100vh;
-    }
-    header {
-      background:#7c3aed; padding:16px; text-align:center;
-      box-shadow:0 4px 12px rgba(0,0,0,.4);
-    }
+    body {margin:0; font-family:Arial,sans-serif; background:#0f1720; color:#f8fafc; display:flex; flex-direction:column; min-height:100vh;}
+    header {background:#7c3aed; padding:16px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,.4);}
     header h1 {margin:0; font-size:1.5rem;}
     header p {margin:6px 0 0; color:#d1d5db; font-size:0.9rem;}
     .container {flex:1; padding:16px; display:flex; flex-direction:column;}
     .search {margin-bottom:12px;}
-    input[type="search"] {
-      width:100%; padding:12px; border-radius:10px; border:2px solid #7c3aed;
-      font-size:1rem;
-    }
+    input[type="search"] {width:100%; padding:12px; border-radius:10px; border:2px solid #7c3aed; font-size:1rem;}
     main {flex:1; overflow:auto;}
     ul {list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;}
     li.song {background:#1f2937; padding:14px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.5);}
@@ -65,9 +57,8 @@
     }
 
     function normalizeRow(row) {
-      // Flexible: supports "Title"/"Song", "Artist"/"Singer"
-      const title = (row["Title"] ?? row["Song"] ?? row["title"] ?? row["song"] ?? "").toString().trim();
-      const artist = (row["Artist"] ?? row["Singer"] ?? row["artist"] ?? row["singer"] ?? "").toString().trim();
+      const title = (row["Title"] ?? row["Song"] ?? row["title"] ?? row["song"] ?? "").trim();
+      const artist = (row["Artist"] ?? row["Singer"] ?? row["artist"] ?? row["singer"] ?? "").trim();
       return { title, artist };
     }
 
@@ -96,6 +87,7 @@
         download: true,
         header: true,
         skipEmptyLines: true,
+        encoding: "UTF-8",
         complete: function(results) {
           songs = results.data.map(normalizeRow).filter(r => r.title);
           renderSongs();
