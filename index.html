@@ -6,16 +6,17 @@
 <title>Starlight Karaoke</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
 <style>
-/* Background Image & Overlay */
+/* Background Image & Blur */
 body {
   margin:0;
   font-family:Arial,sans-serif;
-  background: url('https://files.fm/u/resvbvsn6m') no-repeat center center fixed;
+  background: url('https://pasteboard.co/F6jdeAyBMLLS.jpg') no-repeat center center fixed;
   background-size: cover;
   color:#f8fafc;
   display:flex;
   flex-direction:column;
   min-height:100vh;
+  position: relative;
 }
 body::before {
   content:"";
@@ -24,7 +25,8 @@ body::before {
   left:0;
   width:100%;
   height:100%;
-  background:rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
   z-index:-1;
 }
 
@@ -86,9 +88,10 @@ select, input[type="search"] {
   border-radius:8px;
   border:1px solid #7c3aed;
   font-size:1rem;
-  background:rgba(255,255,255,0.1);
-  color:#f8fafc;
+  background: rgba(31,41,55,0.9);
+  color: #f8fafc;
   backdrop-filter: blur(4px);
+  appearance: none;
 }
 
 /* Song Cards */
