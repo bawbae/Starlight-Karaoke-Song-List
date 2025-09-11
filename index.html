@@ -3,103 +3,155 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Karaoke Song List</title>
+<title>Starlight Karaoke</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
 <style>
-  /* Background Image & Overlay */
-  body {
-    margin:0;
-    font-family:Arial,sans-serif;
-    background: url('https://files.fm/u/resvbvsn6m') no-repeat center center fixed;
-    background-size: cover;
-    color:#f8fafc;
-    display:flex;
-    flex-direction:column;
-    min-height:100vh;
-  }
-  body::before {
-    content:"";
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.4);
-    z-index:-1;
-  }
+/* Background Image & Overlay */
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background: url('https://files.fm/u/resvbvsn6m') no-repeat center center fixed;
+  background-size: cover;
+  color:#f8fafc;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+body::before {
+  content:"";
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.4);
+  z-index:-1;
+}
 
-  /* Header */
-  header {background:#7c3aed;padding:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.4);}
-  header h1 {margin:0;font-size:1.5rem;}
-  header p {margin:6px 0 0;color:#d1d5db;font-size:0.9rem;}
+/* Welcome Screen */
+#welcomeScreen {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  opacity:1;
+  transition:opacity 0.8s;
+  background: rgba(15,23,32,0.5);
+  backdrop-filter: blur(6px);
+  border-radius:12px;
+  margin:16px;
+  padding:24px;
+}
+#welcomeScreen h1 {font-size:2rem;margin-bottom:16px;}
+#welcomeScreen p {margin-bottom:24px;color:#d1d5db;font-size:1rem;}
+button {
+  padding:10px 14px;
+  border-radius:8px;
+  border:none;
+  background:#7c3aed;
+  color:#f8fafc;
+  cursor:pointer;
+  transition:background 0.3s;
+}
+button:hover {background:#5b21b6;}
 
-  /* Containers */
-  .container {flex:1;padding:16px;display:flex;flex-direction:column;}
-  .filters {display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
-  select, input[type="search"], button {padding:12px;border-radius:10px;border:2px solid #7c3aed;font-size:1rem;}
-  button {background:#7c3aed;color:#f8fafc;cursor:pointer;transition:background 0.3s;}
-  button:hover {background:#5b21b6;}
-  main {flex:1;overflow:auto;}
-  ul {list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+/* Main Container */
+#mainContainer {
+  display:none;
+  flex:1;
+  flex-direction:column;
+  opacity:0;
+  transition:opacity 0.8s;
+  background: rgba(15,23,32,0.6);
+  backdrop-filter: blur(8px);
+  border-radius:12px;
+  padding:16px;
+  margin:16px;
+}
+#mainContainer.visible {display:flex;opacity:1;}
 
-  /* Song Cards with Glow */
-  li.song {
-    background:#1f2937;
-    padding:14px;
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.5);
-    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
-    position:relative;
-  }
-  li.song:hover {
-    background:#4338ca;
-    transform: translateY(-4px);
-    box-shadow:0 8px 20px rgba(67,56,202,0.7); /* glow effect */
-  }
+/* Filters */
+.filters {
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:20px;
+  justify-content:flex-start;
+  align-items:center;
+}
+select, input[type="search"] {
+  padding:10px 14px;
+  border-radius:8px;
+  border:1px solid #7c3aed;
+  font-size:1rem;
+  background:rgba(255,255,255,0.1);
+  color:#f8fafc;
+  backdrop-filter: blur(4px);
+}
 
-  li.song.new::after {content:"NEW!";position:absolute;top:6px;right:8px;background:#f59e0b;color:#0f1720;padding:2px 6px;border-radius:6px;font-size:0.75rem;font-weight:bold;animation: pulse 1.2s infinite;}
-  @keyframes pulse {
-    0%,100% {transform:scale(1);opacity:1;}
-    50% {transform:scale(1.1);opacity:0.8;}
-  }
-  h2 {margin:0 0 6px;font-size:1.05rem;}
-  p.artist {margin:0;font-size:.9rem;color:#d1d5db;}
-  li.center {grid-column:1/-1;text-align:center;color:#9ca3af;}
-  footer {padding:10px;text-align:center;background:#2b2f36;font-size:.9rem;color:#9ca3af;}
+/* Song Cards */
+ul {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:16px;
+  padding:0;
+  margin:0;
+  list-style:none;
+}
+li.song {
+  background:rgba(31,41,55,0.85);
+  padding:16px;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  transition:transform 0.3s, box-shadow 0.3s;
+  position:relative;
+}
+li.song:hover {
+  transform: translateY(-5px);
+  box-shadow:0 8px 20px rgba(67,56,202,0.7);
+}
+li.song h2 {
+  font-size:1.15rem;
+  margin:0 0 6px;
+  font-weight:600;
+}
+li.song p.artist {
+  font-size:0.9rem;
+  margin:0;
+  color:#d1d5db;
+}
+li.song.new::after {
+  content:"NEW!";
+  position:absolute;
+  top:8px;
+  right:10px;
+  background:#f59e0b;
+  color:#0f1720;
+  padding:2px 6px;
+  border-radius:6px;
+  font-size:0.75rem;
+  font-weight:bold;
+  animation:pulse 1.2s infinite;
+}
+@keyframes pulse {
+  0%,100%{transform:scale(1);opacity:1;}
+  50%{transform:scale(1.1);opacity:0.8;}
+}
+li.center {
+  grid-column:1/-1;
+  text-align:center;
+  color:#9ca3af;
+  padding:20px;
+  font-size:1rem;
+}
 
-  /* Welcome screen */
-  #welcomeScreen {
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-    opacity:1;
-    transition:opacity 0.8s;
-    background: rgba(15,23,32,0.5);
-    backdrop-filter: blur(6px);
-    border-radius:12px;
-    margin:16px;
-    padding:24px;
-  }
-  #welcomeScreen h1 {font-size:2rem;margin-bottom:16px;}
-  #welcomeScreen p {margin-bottom:24px;color:#d1d5db;font-size:1rem;}
-
-  /* Main Karaoke Container with Blur */
-  #mainContainer {
-    display:none;
-    flex:1;
-    flex-direction:column;
-    opacity:0;
-    transition:opacity 0.8s;
-    background: rgba(15,23,32,0.6);
-    backdrop-filter: blur(8px);
-    border-radius:12px;
-    padding:16px;
-    margin:16px;
-  }
-  #mainContainer.visible {display:flex;opacity:1;}
+/* Footer */
+footer {padding:10px;text-align:center;background:#2b2f36;font-size:.9rem;color:#9ca3af;}
 </style>
 </head>
 <body>
@@ -111,8 +163,8 @@
   <button id="enterButton">Enter Song List</button>
 </div>
 
-<!-- Main Karaoke Container -->
-<div id="mainContainer" class="container">
+<!-- Main Container -->
+<div id="mainContainer">
   <div class="filters">
     <select id="genreFilter">
       <option value="All">All Genres</option>
@@ -126,7 +178,7 @@
   </main>
 </div>
 
-<footer>Made with ❤️ Starlight Karaoke</footer>
+<footer>Made with ❤️ for your Karaoke Room</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 <script>
@@ -224,4 +276,3 @@ document.getElementById("enterButton").addEventListener("click",()=>{
 </script>
 </body>
 </html>
-
