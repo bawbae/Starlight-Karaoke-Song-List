@@ -69,11 +69,10 @@ function fetchSongs(){
   songList.innerHTML=`<li class="center">Loading songs...</li>`;
   Papa.parse(sheetURL,{
     download:true,
-    header:false,       // no headers, first row is actual data
+    header:false,
     skipEmptyLines:true,
     encoding:"UTF-8",
     complete:function(results){
-      // Remove any BOM or weird chars
       songs=results.data.map(row=>{
         const title=row[0]?row[0].replace(/^\uFEFF/,"").trim():"";
         const artist=row[1]?row[1].trim():"";
@@ -89,8 +88,9 @@ function fetchSongs(){
 
 searchInput.addEventListener("input",e=>renderSongs(e.target.value));
 fetchSongs();
+
+// Auto-refresh every 15 seconds to pick up new songs
+setInterval(fetchSongs, 15000);
 </script>
 </body>
 </html>
-setInterval(fetchSongs, 120000); // 120000 ms = 2 minutes
-
