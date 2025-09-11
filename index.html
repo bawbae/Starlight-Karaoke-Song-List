@@ -1,105 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Karaoke Song List</title>
-  <!-- Tiny emoji favicon so browser stops 404 -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
-  <style>
-    body {margin:0; font-family:Arial,sans-serif; background:#0f1720; color:#f8fafc; display:flex; flex-direction:column; min-height:100vh;}
-    header {background:#7c3aed; padding:16px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,.4);}
-    header h1 {margin:0; font-size:1.5rem;}
-    header p {margin:6px 0 0; color:#d1d5db; font-size:0.9rem;}
-    .container {flex:1; padding:16px; display:flex; flex-direction:column;}
-    .search {margin-bottom:12px;}
-    input[type="search"] {width:100%; padding:12px; border-radius:10px; border:2px solid #7c3aed; font-size:1rem;}
-    main {flex:1; overflow:auto;}
-    ul {list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;}
-    li.song {background:#1f2937; padding:14px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.5);}
-    li.song:hover {background:#4338ca;}
-    h2 {margin:0 0 6px; font-size:1.05rem;}
-    p.artist {margin:0; font-size:.9rem; color:#d1d5db;}
-    li.center {grid-column:1/-1; text-align:center; color:#9ca3af;}
-    footer {padding:10px; text-align:center; background:#2b2f36; font-size:.9rem; color:#9ca3af;}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karaoke Song List</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
+<style>
+  body {margin:0;font-family:Arial,sans-serif;background:#0f1720;color:#f8fafc;display:flex;flex-direction:column;min-height:100vh;}
+  header {background:#7c3aed;padding:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.4);}
+  header h1 {margin:0;font-size:1.5rem;}
+  header p {margin:6px 0 0;color:#d1d5db;font-size:0.9rem;}
+  .container {flex:1;padding:16px;display:flex;flex-direction:column;}
+  .search {margin-bottom:12px;}
+  input[type="search"] {width:100%;padding:12px;border-radius:10px;border:2px solid #7c3aed;font-size:1rem;}
+  main {flex:1;overflow:auto;}
+  ul {list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  li.song {background:#1f2937;padding:14px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  li.song:hover {background:#4338ca;}
+  h2 {margin:0 0 6px;font-size:1.05rem;}
+  p.artist {margin:0;font-size:.9rem;color:#d1d5db;}
+  li.center {grid-column:1/-1;text-align:center;color:#9ca3af;}
+  footer {padding:10px;text-align:center;background:#2b2f36;font-size:.9rem;color:#9ca3af;}
+</style>
 </head>
 <body>
-  <header>
-    <h1>🎤 Karaoke Song List</h1>
-    <p>Search by title or artist — auto-updates from Google Sheets.</p>
-  </header>
-
-  <div class="container">
-    <div class="search">
-      <input id="searchInput" type="search" placeholder="Search by title or artist..." autocomplete="off" />
-    </div>
-    <main>
-      <ul id="songList">
-        <li class="center">Loading songs...</li>
-      </ul>
-    </main>
+<header>
+  <h1>🎤 Karaoke Song List</h1>
+  <p>Search by title or artist — auto-updates from Google Sheets.</p>
+</header>
+<div class="container">
+  <div class="search">
+    <input id="searchInput" type="search" placeholder="Search by title or artist..." autocomplete="off">
   </div>
+  <main>
+    <ul id="songList">
+      <li class="center">Loading songs...</li>
+    </ul>
+  </main>
+</div>
+<footer>Made with ❤️ for your Karaoke Room</footer>
 
-  <footer>Made with ❤️ for your Karaoke Room</footer>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaW9dKtBqs7GQzDysWww02zqTWzmt3o4ZEJnhrbqMwCWRhjUgbjfXuE9VBGW4kA8x3ujrIbdvYUprY/pub?gid=0&single=true&output=csv";
+const songList = document.getElementById("songList");
+const searchInput = document.getElementById("searchInput");
+let songs = [];
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-  <script>
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaW9dKtBqs7GQzDysWww02zqTWzmt3o4ZEJnhrbqMwCWRhjUgbjfXuE9VBGW4kA8x3ujrIbdvYUprY/pub?gid=0&single=true&output=csv";
-    const songList = document.getElementById("songList");
-    const searchInput = document.getElementById("searchInput");
-    let songs = [];
+function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
 
-    function escapeHtml(s) {
-      return String(s || "").replace(/[&<>"']/g, c => (
-        {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;'}[c]
-      ));
+function renderSongs(filterText=""){
+  songList.innerHTML="";
+  const q = filterText.toLowerCase().trim();
+  const filtered = songs.filter(s=>{
+    if(!s.title) return false;
+    return s.title.toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q);
+  });
+  if(filtered.length===0){songList.innerHTML=`<li class="center">No songs found</li>`;return;}
+  filtered.forEach(s=>{
+    const li=document.createElement("li");
+    li.className="song";
+    li.innerHTML=`<h2>${escapeHtml(s.title)}</h2><p class="artist">by ${escapeHtml(s.artist||"Unknown")}</p>`;
+    songList.appendChild(li);
+  });
+}
+
+function fetchSongs(){
+  songList.innerHTML=`<li class="center">Loading songs...</li>`;
+  Papa.parse(sheetURL,{
+    download:true,
+    header:false,       // no headers, first row is actual data
+    skipEmptyLines:true,
+    encoding:"UTF-8",
+    complete:function(results){
+      // Remove any BOM or weird chars
+      songs=results.data.map(row=>{
+        const title=row[0]?row[0].replace(/^\uFEFF/,"").trim():"";
+        const artist=row[1]?row[1].trim():"";
+        return {title,artist};
+      }).filter(r=>r.title.length>0);
+      renderSongs();
+    },
+    error:function(err){
+      songList.innerHTML=`<li class="center" style="color:tomato">Error: ${err.message}</li>`;
     }
+  });
+}
 
-    function normalizeRow(row) {
-      const title = (row["Title"] ?? row["Song"] ?? row["title"] ?? row["song"] ?? "").trim();
-      const artist = (row["Artist"] ?? row["Singer"] ?? row["artist"] ?? row["singer"] ?? "").trim();
-      return { title, artist };
-    }
-
-    function renderSongs(filterText="") {
-      songList.innerHTML = "";
-      const q = filterText.toLowerCase().trim();
-      const filtered = songs.filter(s => {
-        if (!s.title) return false;
-        return s.title.toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q);
-      });
-      if (filtered.length === 0) {
-        songList.innerHTML = `<li class="center">No songs found</li>`;
-        return;
-      }
-      filtered.forEach(s => {
-        const li = document.createElement("li");
-        li.className = "song";
-        li.innerHTML = `<h2>${escapeHtml(s.title)}</h2><p class="artist">by ${escapeHtml(s.artist||"Unknown")}</p>`;
-        songList.appendChild(li);
-      });
-    }
-
-    function fetchSongs() {
-      songList.innerHTML = `<li class="center">Loading songs...</li>`;
-      Papa.parse(sheetURL, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        encoding: "UTF-8",
-        complete: function(results) {
-          songs = results.data.map(normalizeRow).filter(r => r.title);
-          renderSongs();
-        },
-        error: function(err) {
-          songList.innerHTML = `<li class="center" style="color:tomato">Error: ${err.message}</li>`;
-        }
-      });
-    }
-
-    searchInput.addEventListener("input", e => renderSongs(e.target.value));
-    fetchSongs();
-  </script>
+searchInput.addEventListener("input",e=>renderSongs(e.target.value));
+fetchSongs();
+</script>
 </body>
 </html>
