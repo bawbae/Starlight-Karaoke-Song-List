@@ -98,10 +98,11 @@ function fetchSongs(){
     skipEmptyLines:true,
     encoding:"UTF-8",
     complete:function(results){
+      // Use uppercase headers from your sheet: "A", "B", "C"
       const newSongs = results.data.map(row=>{
-        const title=row["a"]?row["a"].replace(/^\uFEFF/,"").trim():"";
-        const artist=row["b"]?row["b"].trim():"";
-        const genre=row["c"]?row["c"].trim():"";
+        const title=row["A"]?row["A"].replace(/^\uFEFF/,"").trim():"";
+        const artist=row["B"]?row["B"].trim():"";
+        const genre=row["C"]?row["C"].trim():"";
         return {title,artist,genre};
       }).filter(r=>r.title.length>0);
       lastSongTitles = songs.map(s=>s.title); // store old titles
