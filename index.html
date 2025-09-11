@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starlight Karaoke Song List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-purple-700 p-4 text-center shadow-lg">
+    <h1 class="text-3xl font-bold">🎤 Starlight Karaoke Song List 🎶</h1>
+    <p class="text-sm opacity-80">Search & find your favorite tracks!</p>
+  </header>
+
+  <!-- Search -->
+  <div class="p-4">
+    <input 
+      type="text" 
+      id="searchInput" 
+      placeholder="Search by song or artist..." 
+      class="w-full p-2 rounded-xl border-2 border-purple-500 text-black"
+    />
+  </div>
+
+  <!-- Song List -->
+  <main class="flex-1 overflow-y-auto p-4">
+    <ul id="songList" class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <!-- Songs will be injected here -->
+    </ul>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-purple-700 p-3 text-center text-sm opacity-80">
+    Made with ❤️ for Starlight Karaoke on Rec Room
+  </footer>
+
+  <script>
+    // Sample song list (replace with your own)
+    const songs = [
+      { title: "Bohemian Rhapsody", artist: "Queen" },
+      { title: "Shape of You", artist: "Ed Sheeran" },
+      { title: "Rolling in the Deep", artist: "Adele" },
+      { title: "Uptown Funk", artist: "Bruno Mars" },
+      { title: "Let It Go", artist: "Idina Menzel" },
+      { title: "Bad Romance", artist: "Lady Gaga" },
+      { title: "Smells Like Teen Spirit", artist: "Nirvana" },
+      { title: "Billie Jean", artist: "Michael Jackson" },
+      { title: "Shallow", artist: "Lady Gaga & Bradley Cooper" },
+      { title: "Someone Like You", artist: "Adele" }
+    ];
+
+    const songList = document.getElementById("songList");
+    const searchInput = document.getElementById("searchInput");
+
+    // Function to display songs
+    function displaySongs(filter = "") {
+      songList.innerHTML = "";
+      const filtered = songs.filter(song =>
+        song.title.toLowerCase().includes(filter.toLowerCase()) ||
+        song.artist.toLowerCase().includes(filter.toLowerCase())
+      );
+      if (filtered.length === 0) {
+        songList.innerHTML = `<li class="col-span-full text-center text-gray-400">No songs found</li>`;
+        return;
+      }
+      filtered.forEach(song => {
+        const li = document.createElement("li");
+        li.className = "p-4 bg-gray-800 rounded-2xl shadow hover:bg-purple-600 transition";
+        li.innerHTML = `<h2 class="text-lg font-bold">${song.title}</h2>
+                        <p class="text-sm opacity-80">by ${song.artist}</p>`;
+        songList.appendChild(li);
+      });
+    }
+
+    // Initial load
+    displaySongs();
+
+    // Search functionality
+    searchInput.addEventListener("input", (e) => {
+      displaySongs(e.target.value);
+    });
+  </script>
+</body>
+</html>
