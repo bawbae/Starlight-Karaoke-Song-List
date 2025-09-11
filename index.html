@@ -11,11 +11,15 @@
   header h1 {margin:0;font-size:1.5rem;}
   header p {margin:6px 0 0;color:#d1d5db;font-size:0.9rem;}
   .container {flex:1;padding:16px;display:flex;flex-direction:column;}
+  .tabs {display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .tab {padding:8px 16px;background:#1f2937;border-radius:10px;cursor:pointer;user-select:none;}
+  .tab.active {background:#4338ca;font-weight:bold;}
   .search {margin-bottom:12px;}
   input[type="search"] {width:100%;padding:12px;border-radius:10px;border:2px solid #7c3aed;font-size:1rem;}
   main {flex:1;overflow:auto;}
   ul {list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
-  li.song {background:#1f2937;padding:14px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  li.song {background:#1f2937;padding:14px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.5);transition: background 0.3s;}
+  li.song.new {background:#facc15;color:#0f1720;transition: background 2s;}
   li.song:hover {background:#4338ca;}
   h2 {margin:0 0 6px;font-size:1.05rem;}
   p.artist {margin:0;font-size:.9rem;color:#d1d5db;}
@@ -26,9 +30,10 @@
 <body>
 <header>
   <h1>🎤 Karaoke Song List</h1>
-  <p>Search by title or artist — auto-updates from Google Sheets.</p>
+  <p>Search by title, artist, or genre — auto-updates from Google Sheets.</p>
 </header>
 <div class="container">
+  <div class="tabs" id="genreTabs"></div>
   <div class="search">
     <input id="searchInput" type="search" placeholder="Search by title or artist..." autocomplete="off">
   </div>
@@ -42,43 +47,67 @@
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaW9dKtBqs7GQzDysWww02zqTWzmt3o4ZEJnhrbqMwCWRhjUgbjfXuE9VBGW4kA8x3ujrIbdvYUprY/pub?gid=0&single=true&output=csv";
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-ShkhGuOKQxoMoKnvsvYbwsALudMu6afLjolYpD1bY00aOeZlODjdVa3tsFpdXnQYfgDFTRrYkp4E/pub?gid=0&single=true&output=csv";
 const songList = document.getElementById("songList");
 const searchInput = document.getElementById("searchInput");
+const genreTabs = document.getElementById("genreTabs");
 let songs = [];
+let lastSongTitles = [];
+let currentGenre = "All";
 
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
+
+function renderTabs(){
+  const genres = Array.from(new Set(songs.map(s=>s.genre).filter(g=>g))).sort();
+  genres.unshift("All"); // add "All" tab
+  genreTabs.innerHTML="";
+  genres.forEach(g=>{
+    const div=document.createElement("div");
+    div.className="tab"+(g===currentGenre?" active":"");
+    div.textContent=g;
+    div.addEventListener("click",()=>{currentGenre=g; renderTabs(); renderSongs(searchInput.value);});
+    genreTabs.appendChild(div);
+  });
+}
 
 function renderSongs(filterText=""){
   songList.innerHTML="";
   const q = filterText.toLowerCase().trim();
   const filtered = songs.filter(s=>{
     if(!s.title) return false;
-    return s.title.toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q);
+    const matchGenre = currentGenre==="All" || s.genre===currentGenre;
+    return matchGenre && (s.title.toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q));
   });
   if(filtered.length===0){songList.innerHTML=`<li class="center">No songs found</li>`;return;}
   filtered.forEach(s=>{
     const li=document.createElement("li");
     li.className="song";
     li.innerHTML=`<h2>${escapeHtml(s.title)}</h2><p class="artist">by ${escapeHtml(s.artist||"Unknown")}</p>`;
+    if(!lastSongTitles.includes(s.title)){
+      li.classList.add("new");
+      setTimeout(()=>li.classList.remove("new"),2000); // highlight new songs for 2 sec
+    }
     songList.appendChild(li);
   });
 }
 
 function fetchSongs(){
-  songList.innerHTML=`<li class="center">Loading songs...</li>`;
   Papa.parse(sheetURL,{
     download:true,
-    header:false,
+    header:true,
     skipEmptyLines:true,
     encoding:"UTF-8",
     complete:function(results){
-      songs=results.data.map(row=>{
-        const title=row[0]?row[0].replace(/^\uFEFF/,"").trim():"";
-        const artist=row[1]?row[1].trim():"";
-        return {title,artist};
+      const newSongs = results.data.map(row=>{
+        const title=row["a"]?row["a"].replace(/^\uFEFF/,"").trim():"";
+        const artist=row["b"]?row["b"].trim():"";
+        const genre=row["c"]?row["c"].trim():"";
+        return {title,artist,genre};
       }).filter(r=>r.title.length>0);
-      renderSongs();
+      lastSongTitles = songs.map(s=>s.title); // store old titles
+      songs = newSongs;
+      renderTabs();
+      renderSongs(searchInput.value);
     },
     error:function(err){
       songList.innerHTML=`<li class="center" style="color:tomato">Error: ${err.message}</li>`;
@@ -88,9 +117,7 @@ function fetchSongs(){
 
 searchInput.addEventListener("input",e=>renderSongs(e.target.value));
 fetchSongs();
-
-// ✅ Auto-refresh every 15 seconds to pick up new songs
-setInterval(fetchSongs, 15000);
+setInterval(fetchSongs,15000); // auto-update every 15 sec
 </script>
 </body>
 </html>
