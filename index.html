@@ -4,28 +4,32 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Karaoke Song List</title>
-  <!-- Simple CSS (no Tailwind) so no CDN warnings -->
   <style>
-    :root{
-      --bg:#0f1720; --card:#1f2937; --accent:#7c3aed; --muted:#9ca3af; --text:#f8fafc;
+    body {
+      margin:0; font-family: Arial, sans-serif;
+      background:#0f1720; color:#f8fafc;
+      display:flex; flex-direction:column; min-height:100vh;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-    header{background:linear-gradient(90deg,var(--accent),#5b21b6);padding:18px 16px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
-    header h1{margin:0;font-size:1.5rem}
-    header p{margin:6px 0 0;color:var(--muted);font-size:0.9rem}
-    .container{padding:16px;flex:1;display:flex;flex-direction:column}
-    .search{margin-bottom:12px}
-    input[type="search"]{width:100%;padding:12px 14px;border-radius:12px;border:2px solid rgba(255,255,255,.06);font-size:1rem}
-    main{flex:1;overflow:auto}
-    ul.song-grid{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-    li.song{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,.6);transition:transform .12s ease,background .12s}
-    li.song:hover{transform:translateY(-4px);background:linear-gradient(180deg, rgba(124,58,237,.12), var(--card))}
-    h2.title{margin:0 0 6px;font-size:1.05rem}
-    p.artist{margin:0;color:var(--muted);font-size:.92rem}
-    .center{grid-column:1/-1;text-align:center;color:var(--muted)}
-    footer{padding:10px 12px;text-align:center;background:#2b2f36;color:var(--muted);font-size:.9rem}
-    @media (max-width:480px){header h1{font-size:1.25rem}}
+    header {
+      background:#7c3aed; padding:16px; text-align:center;
+      box-shadow:0 4px 12px rgba(0,0,0,.4);
+    }
+    header h1 {margin:0; font-size:1.5rem;}
+    header p {margin:6px 0 0; color:#d1d5db; font-size:0.9rem;}
+    .container {flex:1; padding:16px; display:flex; flex-direction:column;}
+    .search {margin-bottom:12px;}
+    input[type="search"] {
+      width:100%; padding:12px; border-radius:10px; border:2px solid #7c3aed;
+      font-size:1rem;
+    }
+    main {flex:1; overflow:auto;}
+    ul {list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;}
+    li.song {background:#1f2937; padding:14px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.5);}
+    li.song:hover {background:#4338ca;}
+    h2 {margin:0 0 6px; font-size:1.05rem;}
+    p.artist {margin:0; font-size:.9rem; color:#d1d5db;}
+    li.center {grid-column:1/-1; text-align:center; color:#9ca3af;}
+    footer {padding:10px; text-align:center; background:#2b2f36; font-size:.9rem; color:#9ca3af;}
   </style>
 </head>
 <body>
@@ -38,9 +42,8 @@
     <div class="search">
       <input id="searchInput" type="search" placeholder="Search by title or artist..." autocomplete="off" />
     </div>
-
     <main>
-      <ul id="songList" class="song-grid">
+      <ul id="songList">
         <li class="center">Loading songs...</li>
       </ul>
     </main>
@@ -48,101 +51,63 @@
 
   <footer>Made with ❤️ for your Karaoke Room</footer>
 
-  <!-- PapaParse (safe CSV parsing) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-
   <script>
-  // Immediately-invoked to avoid any global leaks
-  (function() {
-    // ✅ Your published CSV link (already provided by you)
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaW9dKtBqs7GQzDysWww02zqTWzmt3o4ZEJnhrbqMwCWRhjUgbjfXuE9VBGW4kA8x3ujrIbdvYUprY/pub?gid=0&single=true&output=csv";
-
     const songList = document.getElementById("songList");
     const searchInput = document.getElementById("searchInput");
     let songs = [];
 
     function escapeHtml(s) {
-      return String(s || "").replace(/[&<>"']/g, function(c){
-        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]);
-      });
+      return String(s || "").replace(/[&<>"']/g, c => (
+        {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;'}[c]
+      ));
     }
 
     function normalizeRow(row) {
-      // Use common header names, fallback to empty string
-      const title = (row["Title"] ?? row["title"] ?? row["Song"] ?? row["song"] ?? "").toString().trim();
-      const artist = (row["Artist"] ?? row["artist"] ?? row["Performer"] ?? row["Singer"] ?? "").toString().trim();
+      // Flexible: supports "Title"/"Song", "Artist"/"Singer"
+      const title = (row["Title"] ?? row["Song"] ?? row["title"] ?? row["song"] ?? "").toString().trim();
+      const artist = (row["Artist"] ?? row["Singer"] ?? row["artist"] ?? row["singer"] ?? "").toString().trim();
       return { title, artist };
     }
 
-    function renderList(filterText) {
-      const q = (filterText || "").toLowerCase().trim();
+    function renderSongs(filterText="") {
       songList.innerHTML = "";
+      const q = filterText.toLowerCase().trim();
       const filtered = songs.filter(s => {
-        if (!s || !s.title) return false;
-        if (!q) return true;
-        return s.title.toLowerCase().includes(q) || (s.artist || "").toLowerCase().includes(q);
+        if (!s.title) return false;
+        return s.title.toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q);
       });
-
       if (filtered.length === 0) {
-        const li = document.createElement("li");
-        li.className = "center";
-        li.textContent = q ? "No songs found" : "No songs available";
-        songList.appendChild(li);
+        songList.innerHTML = `<li class="center">No songs found</li>`;
         return;
       }
-
       filtered.forEach(s => {
         const li = document.createElement("li");
         li.className = "song";
-        li.innerHTML = "<h2 class='title'>" + escapeHtml(s.title) + "</h2>"
-                     + "<p class='artist'>by " + escapeHtml(s.artist || "Unknown") + "</p>";
+        li.innerHTML = `<h2>${escapeHtml(s.title)}</h2><p class="artist">by ${escapeHtml(s.artist||"Unknown")}</p>`;
         songList.appendChild(li);
       });
     }
 
-    function showMessage(text, isError) {
-      songList.innerHTML = "";
-      const li = document.createElement("li");
-      li.className = "center";
-      li.textContent = text;
-      if (isError) li.style.color = "tomato";
-      songList.appendChild(li);
-    }
-
     function fetchSongs() {
-      showMessage("Loading songs...");
+      songList.innerHTML = `<li class="center">Loading songs...</li>`;
       Papa.parse(sheetURL, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          try {
-            const data = results && results.data ? results.data : [];
-            songs = data.map(normalizeRow).filter(r => r.title && r.title.length > 0);
-            renderList(searchInput.value);
-          } catch (e) {
-            console.error(e);
-            showMessage("Error parsing sheet", true);
-          }
+          songs = results.data.map(normalizeRow).filter(r => r.title);
+          renderSongs();
         },
         error: function(err) {
-          console.error("PapaParse error:", err);
-          showMessage("Failed to load songs. Check CSV publish settings.", true);
+          songList.innerHTML = `<li class="center" style="color:tomato">Error: ${err.message}</li>`;
         }
       });
     }
 
-    // Wire up search
-    searchInput.addEventListener("input", function(e){
-      renderList(e.target.value);
-    });
-
-    // start
+    searchInput.addEventListener("input", e => renderSongs(e.target.value));
     fetchSongs();
-
-    // Optional: refresh every 2 minutes so sheet edits appear automatically
-    // setInterval(fetchSongs, 120000);
-  })();
   </script>
 </body>
 </html>
