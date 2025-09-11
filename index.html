@@ -89,7 +89,7 @@ function fetchSongs(){
 searchInput.addEventListener("input",e=>renderSongs(e.target.value));
 fetchSongs();
 
-// Auto-refresh every 15 seconds to pick up new songs
+// ✅ Auto-refresh every 15 seconds to pick up new songs
 setInterval(fetchSongs, 15000);
 </script>
 </body>
