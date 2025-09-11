@@ -6,30 +6,113 @@
 <title>Karaoke Song List</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
 <style>
-  body {margin:0;font-family:Arial,sans-serif;background:#0f1720;color:#f8fafc;display:flex;flex-direction:column;min-height:100vh;}
+  /* Background Image & Overlay */
+  body {
+    margin:0;
+    font-family:Arial,sans-serif;
+    background: url('https://files.fm/u/resvbvsn6m') no-repeat center center fixed;
+    background-size: cover;
+    color:#f8fafc;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  body::before {
+    content:"";
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    z-index:-1;
+  }
+
+  /* Header */
   header {background:#7c3aed;padding:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.4);}
   header h1 {margin:0;font-size:1.5rem;}
   header p {margin:6px 0 0;color:#d1d5db;font-size:0.9rem;}
+
+  /* Containers */
   .container {flex:1;padding:16px;display:flex;flex-direction:column;}
-  .filters {display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
-  select, input[type="search"] {padding:12px;border-radius:10px;border:2px solid #7c3aed;font-size:1rem;flex:1;}
+  .filters {display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+  select, input[type="search"], button {padding:12px;border-radius:10px;border:2px solid #7c3aed;font-size:1rem;}
+  button {background:#7c3aed;color:#f8fafc;cursor:pointer;transition:background 0.3s;}
+  button:hover {background:#5b21b6;}
   main {flex:1;overflow:auto;}
   ul {list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
-  li.song {background:#1f2937;padding:14px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.5);transition: background 0.3s;}
-  li.song.new {background:#facc15;color:#0f1720;transition: background 2s;}
-  li.song:hover {background:#4338ca;}
+
+  /* Song Cards with Glow */
+  li.song {
+    background:#1f2937;
+    padding:14px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.5);
+    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    position:relative;
+  }
+  li.song:hover {
+    background:#4338ca;
+    transform: translateY(-4px);
+    box-shadow:0 8px 20px rgba(67,56,202,0.7); /* glow effect */
+  }
+
+  li.song.new::after {content:"NEW!";position:absolute;top:6px;right:8px;background:#f59e0b;color:#0f1720;padding:2px 6px;border-radius:6px;font-size:0.75rem;font-weight:bold;animation: pulse 1.2s infinite;}
+  @keyframes pulse {
+    0%,100% {transform:scale(1);opacity:1;}
+    50% {transform:scale(1.1);opacity:0.8;}
+  }
   h2 {margin:0 0 6px;font-size:1.05rem;}
   p.artist {margin:0;font-size:.9rem;color:#d1d5db;}
   li.center {grid-column:1/-1;text-align:center;color:#9ca3af;}
   footer {padding:10px;text-align:center;background:#2b2f36;font-size:.9rem;color:#9ca3af;}
+
+  /* Welcome screen */
+  #welcomeScreen {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    opacity:1;
+    transition:opacity 0.8s;
+    background: rgba(15,23,32,0.5);
+    backdrop-filter: blur(6px);
+    border-radius:12px;
+    margin:16px;
+    padding:24px;
+  }
+  #welcomeScreen h1 {font-size:2rem;margin-bottom:16px;}
+  #welcomeScreen p {margin-bottom:24px;color:#d1d5db;font-size:1rem;}
+
+  /* Main Karaoke Container with Blur */
+  #mainContainer {
+    display:none;
+    flex:1;
+    flex-direction:column;
+    opacity:0;
+    transition:opacity 0.8s;
+    background: rgba(15,23,32,0.6);
+    backdrop-filter: blur(8px);
+    border-radius:12px;
+    padding:16px;
+    margin:16px;
+  }
+  #mainContainer.visible {display:flex;opacity:1;}
 </style>
 </head>
 <body>
-<header>
-  <h1>🎤 Karaoke Song List</h1>
-  <p>Search by title, artist, or genre — auto-updates from Google Sheets.</p>
-</header>
-<div class="container">
+
+<!-- Welcome Screen -->
+<div id="welcomeScreen">
+  <h1>🎤 Welcome to Starlight Karaoke!</h1>
+  <p>Click the button below to view the song list and get ready to sing!</p>
+  <button id="enterButton">Enter Song List</button>
+</div>
+
+<!-- Main Karaoke Container -->
+<div id="mainContainer" class="container">
   <div class="filters">
     <select id="genreFilter">
       <option value="All">All Genres</option>
@@ -42,7 +125,8 @@
     </ul>
   </main>
 </div>
-<footer>Made with ❤️ Starlight Karaoke</footer>
+
+<footer>Made with ❤️ for your Karaoke Room</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 <script>
@@ -50,12 +134,16 @@ const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-ShkhGuOKQxo
 const songList = document.getElementById("songList");
 const searchInput = document.getElementById("searchInput");
 const genreFilter = document.getElementById("genreFilter");
+const welcomeScreen = document.getElementById("welcomeScreen");
+const mainContainer = document.getElementById("mainContainer");
 let songs = [];
 let lastSongTitles = [];
 let currentGenre = "All";
 
+// Escape HTML
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
 
+// Render genre dropdown
 function renderGenreOptions(){
   const genres = Array.from(new Set(songs.map(s=>s.genre).filter(g=>g))).sort();
   genreFilter.innerHTML='<option value="All">All Genres</option>';
@@ -68,6 +156,7 @@ function renderGenreOptions(){
   genreFilter.value = currentGenre;
 }
 
+// Render songs
 function renderSongs(filterText=""){
   songList.innerHTML="";
   const q = filterText.toLowerCase().trim();
@@ -89,6 +178,7 @@ function renderSongs(filterText=""){
   });
 }
 
+// Fetch songs from Google Sheets
 function fetchSongs(){
   Papa.parse(sheetURL,{
     download:true,
@@ -96,7 +186,7 @@ function fetchSongs(){
     skipEmptyLines:true,
     encoding:"UTF-8",
     complete:function(results){
-      const dataRows = results.data.slice(1); // skip A/B/C headers
+      const dataRows = results.data.slice(1);
       const newSongs = dataRows.map(row=>{
         const title=row[0]?row[0].replace(/^\uFEFF/,"").trim():"";
         const artist=row[1]?row[1].trim():"";
@@ -114,15 +204,23 @@ function fetchSongs(){
   });
 }
 
+// Event listeners
 searchInput.addEventListener("input",e=>renderSongs(e.target.value));
 genreFilter.addEventListener("change",e=>{
   currentGenre = e.target.value;
   renderSongs(searchInput.value);
 });
 
-fetchSongs();
-setInterval(fetchSongs,15000); // auto-refresh every 15 sec
+// Welcome screen fade
+document.getElementById("enterButton").addEventListener("click",()=>{
+  welcomeScreen.style.opacity = "0";
+  setTimeout(()=>{
+    welcomeScreen.style.display="none";
+    mainContainer.classList.add("visible");
+    fetchSongs();
+    setInterval(fetchSongs,15000);
+  },800);
+});
 </script>
 </body>
 </html>
-
