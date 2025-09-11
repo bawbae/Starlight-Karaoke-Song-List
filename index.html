@@ -6,27 +6,27 @@
 <title>Starlight Karaoke</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
 <style>
-/* Background Image & Blur */
+/* Body with background image */
 body {
   margin:0;
   font-family:Arial,sans-serif;
-  background: url('https://pasteboard.co/F6jdeAyBMLLS.jpg') no-repeat center center fixed;
-  background-size: cover;
   color:#f8fafc;
+  min-height:100vh;
   display:flex;
   flex-direction:column;
-  min-height:100vh;
   position: relative;
+  background: url('https://pasteboard.co/F6jdeAyBMLLS.jpg') no-repeat center center fixed;
+  background-size: cover;
 }
-body::before {
-  content:"";
-  position:fixed;
+
+/* Overlay for readability */
+#overlay {
+  position: fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.4); /* semi-transparent dark */
   z-index:-1;
 }
 
@@ -40,8 +40,7 @@ body::before {
   text-align:center;
   opacity:1;
   transition:opacity 0.8s;
-  background: rgba(15,23,32,0.5);
-  backdrop-filter: blur(6px);
+  background: rgba(15,23,32,0.6);
   border-radius:12px;
   margin:16px;
   padding:24px;
@@ -66,8 +65,7 @@ button:hover {background:#5b21b6;}
   flex-direction:column;
   opacity:0;
   transition:opacity 0.8s;
-  background: rgba(15,23,32,0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(15,23,32,0.7); /* semi-transparent for readability */
   border-radius:12px;
   padding:16px;
   margin:16px;
@@ -90,7 +88,6 @@ select, input[type="search"] {
   font-size:1rem;
   background: rgba(31,41,55,0.9);
   color: #f8fafc;
-  backdrop-filter: blur(4px);
   appearance: none;
 }
 
@@ -159,6 +156,8 @@ footer {padding:10px;text-align:center;background:#2b2f36;font-size:.9rem;color:
 </head>
 <body>
 
+<div id="overlay"></div>
+
 <!-- Welcome Screen -->
 <div id="welcomeScreen">
   <h1>🎤 Welcome to Starlight Karaoke!</h1>
@@ -181,7 +180,7 @@ footer {padding:10px;text-align:center;background:#2b2f36;font-size:.9rem;color:
   </main>
 </div>
 
-<footer>Made with ❤️ for your Karaoke Room</footer>
+<footer>Made with ❤️ Starlight Karaoke</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 <script>
@@ -195,10 +194,8 @@ let songs = [];
 let lastSongTitles = [];
 let currentGenre = "All";
 
-// Escape HTML
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
 
-// Render genre dropdown
 function renderGenreOptions(){
   const genres = Array.from(new Set(songs.map(s=>s.genre).filter(g=>g))).sort();
   genreFilter.innerHTML='<option value="All">All Genres</option>';
@@ -211,7 +208,6 @@ function renderGenreOptions(){
   genreFilter.value = currentGenre;
 }
 
-// Render songs
 function renderSongs(filterText=""){
   songList.innerHTML="";
   const q = filterText.toLowerCase().trim();
@@ -233,7 +229,6 @@ function renderSongs(filterText=""){
   });
 }
 
-// Fetch songs from Google Sheets
 function fetchSongs(){
   Papa.parse(sheetURL,{
     download:true,
@@ -259,21 +254,19 @@ function fetchSongs(){
   });
 }
 
-// Event listeners
 searchInput.addEventListener("input",e=>renderSongs(e.target.value));
 genreFilter.addEventListener("change",e=>{
   currentGenre = e.target.value;
   renderSongs(searchInput.value);
 });
 
-// Welcome screen fade
 document.getElementById("enterButton").addEventListener("click",()=>{
   welcomeScreen.style.opacity = "0";
   setTimeout(()=>{
     welcomeScreen.style.display="none";
     mainContainer.classList.add("visible");
     fetchSongs();
-    setInterval(fetchSongs,15000);
+    setInterval(fetchSongs,30000); // refresh every 30 seconds
   },800);
 });
 </script>
