@@ -75,7 +75,7 @@ select, input[type="search"] {
   color:#f8fafc;
 }
 
-/* Song Cards */
+/* Song Cards with border and shadow */
 ul {
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
@@ -91,12 +91,15 @@ li.song {
   display:flex;
   flex-direction:column;
   justify-content:center;
-  transition:transform 0.2s, box-shadow 0.2s;
+  transition:transform 0.2s, box-shadow 0.2s, border 0.2s;
   position:relative;
+  border: 2px solid #7c3aed; /* adds border */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* subtle shadow */
 }
 li.song:hover {
   transform: translateY(-3px);
-  box-shadow:0 6px 15px rgba(124,58,237,0.5);
+  box-shadow: 0 8px 20px rgba(124,58,237,0.5);
+  border-color: #5b21b6; /* hover border color */
 }
 li.song h2 {
   font-size:1.15rem;
@@ -247,7 +250,7 @@ document.getElementById("enterButton").addEventListener("click",()=>{
     welcomeScreen.style.display="none";
     mainContainer.classList.add("visible");
     fetchSongs();
-    setInterval(fetchSongs,30000); // fetch every 30 sec
+    setInterval(fetchSongs,30000);
   },500);
 });
 </script>
