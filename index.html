@@ -59,7 +59,7 @@ function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;',
 
 function renderTabs(){
   const genres = Array.from(new Set(songs.map(s=>s.genre).filter(g=>g))).sort();
-  genres.unshift("All"); // add "All" tab
+  genres.unshift("All");
   genreTabs.innerHTML="";
   genres.forEach(g=>{
     const div=document.createElement("div");
@@ -85,7 +85,7 @@ function renderSongs(filterText=""){
     li.innerHTML=`<h2>${escapeHtml(s.title)}</h2><p class="artist">by ${escapeHtml(s.artist||"Unknown")}</p>`;
     if(!lastSongTitles.includes(s.title)){
       li.classList.add("new");
-      setTimeout(()=>li.classList.remove("new"),2000); // highlight new songs for 2 sec
+      setTimeout(()=>li.classList.remove("new"),2000);
     }
     songList.appendChild(li);
   });
@@ -94,18 +94,19 @@ function renderSongs(filterText=""){
 function fetchSongs(){
   Papa.parse(sheetURL,{
     download:true,
-    header:true,
+    header:false, // ignore headers
     skipEmptyLines:true,
     encoding:"UTF-8",
     complete:function(results){
-      // Use uppercase headers from your sheet: "A", "B", "C"
-      const newSongs = results.data.map(row=>{
-        const title=row["A"]?row["A"].replace(/^\uFEFF/,"").trim():"";
-        const artist=row["B"]?row["B"].trim():"";
-        const genre=row["C"]?row["C"].trim():"";
+      // skip first row (A/B/C headers)
+      const dataRows = results.data.slice(1);
+      const newSongs = dataRows.map(row=>{
+        const title=row[0]?row[0].replace(/^\uFEFF/,"").trim():"";
+        const artist=row[1]?row[1].trim():"";
+        const genre=row[2]?row[2].trim():"";
         return {title,artist,genre};
       }).filter(r=>r.title.length>0);
-      lastSongTitles = songs.map(s=>s.title); // store old titles
+      lastSongTitles = songs.map(s=>s.title);
       songs = newSongs;
       renderTabs();
       renderSongs(searchInput.value);
@@ -118,7 +119,7 @@ function fetchSongs(){
 
 searchInput.addEventListener("input",e=>renderSongs(e.target.value));
 fetchSongs();
-setInterval(fetchSongs,15000); // auto-update every 15 sec
+setInterval(fetchSongs,15000); // auto-update every 15 seconds
 </script>
 </body>
 </html>
