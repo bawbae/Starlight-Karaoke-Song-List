@@ -1,285 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Starlight Karaoke</title>
 <style>
-body {
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#111827; /* dark background */
-  color:#f8fafc;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-}
+  body {
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#111827;
+    color:#f8fafc;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
 
-/* Welcome Screen with background image */
-#welcomeScreen {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  opacity:1;
-  transition:opacity 0.5s;
-  border-radius:12px;
-  margin:16px;
-  padding:24px;
-  position:relative;
-  overflow:hidden;
-}
-#welcomeScreen::before {
-  content:"";
-  position:absolute;
-  inset:0;
-  background:url("https://i.imgur.com/9pTrO04.jpeg") no-repeat center center/cover;
-  z-index:0;
-}
-#welcomeScreen::after {
-  content:"";
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.6); /* dark overlay for readability */
-  z-index:1;
-}
-#welcomeScreen h1,
-#welcomeScreen p,
-#welcomeScreen button {
-  position:relative;
-  z-index:2;
-}
-#welcomeScreen h1 {font-size:2rem;margin-bottom:16px;}
-#welcomeScreen p {margin-bottom:24px;color:#d1d5db;font-size:1rem;}
-button {
-  padding:10px 14px;
-  border-radius:8px;
-  border:none;
-  background:#7c3aed;
-  color:#f8fafc;
-  cursor:pointer;
-  transition:background 0.3s;
-}
-button:hover {background:#5b21b6;}
+  /* Welcome Screen with background image + overlay */
+  #welcomeScreen{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    opacity:1;
+    transition:opacity .5s;
+    border-radius:12px;
+    margin:16px;
+    padding:24px;
+    position:relative;
+    overflow:hidden;
+  }
+  #welcomeScreen::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: url("https://i.imgur.com/jaVYLuH.jpg") no-repeat center center/cover;
+    z-index:0;
+    transform: scale(1.02); /* slight scale to avoid edges */
+  }
+  #welcomeScreen::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.55); /* dark overlay for readability */
+    z-index:1;
+  }
+  #welcomeScreen h1,
+  #welcomeScreen p,
+  #welcomeScreen button {
+    position:relative;
+    z-index:2;
+  }
+  #welcomeScreen h1{font-size:2rem;margin-bottom:16px;}
+  #welcomeScreen p{margin-bottom:24px;color:#d1d5db;font-size:1rem;}
 
-/* Main Container */
-#mainContainer {
-  display:none;
-  flex:1;
-  flex-direction:column;
-  opacity:0;
-  transition:opacity 0.5s;
-  background: rgba(31,41,55,0.95);
-  border-radius:12px;
-  padding:16px;
-  margin:16px;
-}
-#mainContainer.visible {display:flex;opacity:1;}
+  button {
+    padding:10px 14px;
+    border-radius:8px;
+    border:none;
+    background:#7c3aed;
+    color:#f8fafc;
+    cursor:pointer;
+    transition:background .25s;
+  }
+  button:hover{background:#5b21b6;}
 
-/* Filters */
-.filters {
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  margin-bottom:20px;
-  justify-content:flex-start;
-  align-items:center;
-}
-select, input[type="search"] {
-  padding:10px 14px;
-  border-radius:8px;
-  border:1px solid #7c3aed;
-  font-size:1rem;
-  background:#1f2937;
-  color:#f8fafc;
-}
+  /* Main Container */
+  #mainContainer{
+    display:none;
+    flex:1;
+    flex-direction:column;
+    opacity:0;
+    transition:opacity .4s;
+    background: rgba(31,41,55,0.95);
+    border-radius:12px;
+    padding:16px;
+    margin:16px;
+  }
+  #mainContainer.visible{display:flex;opacity:1;}
 
-/* Song Cards with border and shadow */
-ul {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:16px;
-  padding:0;
-  margin:0;
-  list-style:none;
-}
-li.song {
-  background:#1f2937;
-  padding:16px;
-  border-radius:12px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  transition:transform 0.2s, box-shadow 0.2s, border 0.2s;
-  position:relative;
-  border: 2px solid #7c3aed; /* adds border */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* subtle shadow */
-}
-li.song:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(124,58,237,0.5);
-  border-color: #5b21b6; /* hover border color */
-}
-li.song h2 {
-  font-size:1.15rem;
-  margin:0 0 6px;
-  font-weight:600;
-}
-li.song p.artist {
-  font-size:0.9rem;
-  margin:0;
-  color:#d1d5db;
-}
-li.song.new::after {
-  content:"NEW!";
-  position:absolute;
-  top:8px;
-  right:10px;
-  background:#f59e0b;
-  color:#0f1720;
-  padding:2px 6px;
-  border-radius:6px;
-  font-size:0.75rem;
-  font-weight:bold;
-  animation:pulse 1.2s infinite;
-}
-@keyframes pulse {
-  0%,100%{transform:scale(1);opacity:1;}
-  50%{transform:scale(1.1);opacity:0.8;}
-}
-li.center {
-  grid-column:1/-1;
-  text-align:center;
-  color:#9ca3af;
-  padding:20px;
-  font-size:1rem;
-}
+  /* Filters */
+  .filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:18px;
+    align-items:center;
+  }
+  select, input[type="search"]{
+    padding:10px 14px;
+    border-radius:8px;
+    border:1px solid #7c3aed;
+    font-size:1rem;
+    background:#1f2937;
+    color:#f8fafc;
+  }
 
-/* Footer */
-footer {
-  padding:10px;
-  text-align:center;
-  background:#1f2937;
-  font-size:.9rem;
-  color:#9ca3af;
-}
+  /* Song Cards with border & shadow */
+  ul{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:16px;
+    padding:0;
+    margin:0;
+    list-style:none;
+  }
+  li.song{
+    background:#1f2937;
+    padding:16px;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    transition:transform .18s, box-shadow .18s, border .18s;
+    position:relative;
+    border:2px solid #7c3aed;
+    box-shadow:0 4px 10px rgba(0,0,0,0.28);
+  }
+  li.song:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(124,58,237,0.45);
+    border-color:#5b21b6;
+  }
+  li.song h2{font-size:1.15rem;margin:0 0 6px;font-weight:600;}
+  li.song p.artist{font-size:.9rem;margin:0;color:#d1d5db;}
+
+  li.song.new::after{
+    content:"NEW!";
+    position:absolute;
+    top:8px;
+    right:10px;
+    background:#f59e0b;
+    color:#0f1720;
+    padding:2px 6px;
+    border-radius:6px;
+    font-size:.75rem;
+    font-weight:bold;
+    animation:pulse 1.2s infinite;
+  }
+  @keyframes pulse{
+    0%,100%{transform:scale(1);opacity:1;}
+    50%{transform:scale(1.08);opacity:.85;}
+  }
+
+  li.center{
+    grid-column:1/-1;
+    text-align:center;
+    color:#9ca3af;
+    padding:20px;
+    font-size:1rem;
+  }
+
+  /* Footer */
+  footer{
+    padding:10px;
+    text-align:center;
+    background:#1f2937;
+    font-size:.9rem;
+    color:#9ca3af;
+    margin:0 16px 16px;
+    border-radius:8px;
+  }
+
+  /* Responsive small tweaks */
+  @media (max-width:520px){
+    #welcomeScreen{margin:12px;padding:18px;}
+    #mainContainer{margin:12px;padding:12px;}
+  }
 </style>
 </head>
 <body>
 
-<!-- Welcome Screen -->
-<div id="welcomeScreen">
-  <h1>🎤 Welcome to Starlight Karaoke!</h1>
-  <p>Click the button below to view the song list and get ready to sing!</p>
-  <button id="enterButton">Enter Song List</button>
-</div>
-
-<!-- Main Container -->
-<div id="mainContainer">
-  <div class="filters">
-    <select id="genreFilter">
-      <option value="All">All Genres</option>
-    </select>
-    <input id="searchInput" type="search" placeholder="Search by title or artist..." autocomplete="off">
+  <!-- Welcome Screen -->
+  <div id="welcomeScreen">
+    <h1>🎤 Welcome to Starlight Karaoke!</h1>
+    <p>Click the button below to view the song list and get ready to sing!</p>
+    <button id="enterButton">Enter Song List</button>
   </div>
-  <main>
-    <ul id="songList">
-      <li class="center">Loading songs...</li>
-    </ul>
-  </main>
-</div>
 
-<footer>Made with ❤️ for your Karaoke Room</footer>
+  <!-- Main Container -->
+  <div id="mainContainer">
+    <div class="filters">
+      <select id="genreFilter">
+        <option value="all">All Genres</option>
+      </select>
+      <input id="searchInput" type="search" placeholder="Search by title or artist..." autocomplete="off" />
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-<script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-ShkhGuOKQxoMoKnvsvYbwsALudMu6afLjolYpD1bY00aOeZlODjdVa3tsFpdXnQYfgDFTRrYkp4E/pub?gid=0&single=true&output=csv";
-const songList = document.getElementById("songList");
-const searchInput = document.getElementById("searchInput");
-const genreFilter = document.getElementById("genreFilter");
-const welcomeScreen = document.getElementById("welcomeScreen");
-const mainContainer = document.getElementById("mainContainer");
-let songs = [];
-let lastSongTitles = [];
-let currentGenre = "All";
+    <main>
+      <ul id="songList">
+        <li class="center">Loading songs...</li>
+      </ul>
+    </main>
+  </div>
 
-function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
+  <footer>Made with ❤️ for your Karaoke Room — Starlight Karaoke</footer>
 
-function renderGenreOptions(){
-  const genres = Array.from(new Set(songs.map(s=>s.genre).filter(g=>g))).sort();
-  genreFilter.innerHTML='<option value="All">All Genres</option>';
-  genres.forEach(g=>{
-    const option = document.createElement("option");
-    option.value = g;
-    option.textContent = g;
-    genreFilter.appendChild(option);
-  });
-  genreFilter.value = currentGenre;
-}
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script>
+    // Google sheet CSV (published)
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-ShkhGuOKQxoMoKnvsvYbwsALudMu6afLjolYpD1bY00aOeZlODjdVa3tsFpdXnQYfgDFTRrYkp4E/pub?gid=0&single=true&output=csv";
+    const songList = document.getElementById("songList");
+    const searchInput = document.getElementById("searchInput");
+    const genreFilter = document.getElementById("genreFilter");
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const mainContainer = document.getElementById("mainContainer");
 
-function renderSongs(filterText=""){
-  songList.innerHTML="";
-  const q = filterText.toLowerCase().trim();
-  const filtered = songs.filter(s=>{
-    if(!s.title) return false;
-    const matchGenre = currentGenre==="All" || s.genre===currentGenre;
-    return matchGenre && (s.title.toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q));
-  });
-  if(filtered.length===0){songList.innerHTML=`<li class="center">No songs found</li>`;return;}
-  filtered.forEach(s=>{
-    const li=document.createElement("li");
-    li.className="song";
-    li.innerHTML=`<h2>${escapeHtml(s.title)}</h2><p class="artist">by ${escapeHtml(s.artist||"Unknown")}</p>`;
-    if(!lastSongTitles.includes(s.title)){
-      li.classList.add("new");
-      setTimeout(()=>li.classList.remove("new"),2000);
+    let songs = [];
+    let lastSongTitles = [];
+    let currentGenre = "all"; // lowercased values: 'all' or 'rock', 'pop', etc.
+
+    function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+    function renderGenreOptions(){
+      // Build a case-insensitive unique list but keep original display casing (first occurrence)
+      const map = Object.create(null);
+      for(const s of songs){
+        const g = (s.genre||"").trim();
+        if(!g) continue;
+        const key = g.toLowerCase();
+        if(!map[key]) map[key] = g;
+      }
+      const genres = Object.values(map).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+      // Populate select (use lowercased values for option.value)
+      genreFilter.innerHTML = '<option value="all">All Genres</option>';
+      for(const g of genres){
+        const opt = document.createElement("option");
+        opt.value = g.toLowerCase();
+        opt.textContent = g;
+        genreFilter.appendChild(opt);
+      }
+      // keep current selection if possible
+      if([...genreFilter.options].some(o=>o.value===currentGenre)) genreFilter.value = currentGenre;
+      else genreFilter.value = "all";
     }
-    songList.appendChild(li);
-  });
-}
 
-function fetchSongs(){
-  Papa.parse(sheetURL,{
-    download:true,
-    header:false,
-    skipEmptyLines:true,
-    encoding:"UTF-8",
-    complete:function(results){
-      const dataRows = results.data.slice(1);
-      const newSongs = dataRows.map(row=>{
-        const title=row[0]?row[0].replace(/^\uFEFF/,"").trim():"";
-        const artist=row[1]?row[1].trim():"";
-        const genre=row[2]?row[2].trim():"";
-        return {title,artist,genre};
-      }).filter(r=>r.title.length>0);
-      lastSongTitles = songs.map(s=>s.title);
-      songs = newSongs;
-      renderGenreOptions();
+    function renderSongs(filterText=""){
+      songList.innerHTML = "";
+      const q = (filterText||"").toLowerCase().trim();
+      const filtered = songs.filter(s=>{
+        if(!s.title) return false;
+        const sGenreLower = (s.genre||"").trim().toLowerCase();
+        const matchGenre = (currentGenre === "all" || sGenreLower === currentGenre);
+        return matchGenre && (s.title.toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q));
+      });
+
+      if(filtered.length===0){
+        songList.innerHTML = `<li class="center">No songs found</li>`;
+        return;
+      }
+
+      for(const s of filtered){
+        const li = document.createElement("li");
+        li.className = "song";
+        li.innerHTML = `<h2>${escapeHtml(s.title)}</h2><p class="artist">by ${escapeHtml(s.artist||"Unknown")}</p>`;
+        if(!lastSongTitles.includes(s.title)){
+          li.classList.add("new");
+          setTimeout(()=>li.classList.remove("new"),2000);
+        }
+        songList.appendChild(li);
+      }
+    }
+
+    function fetchSongs(){
+      Papa.parse(sheetURL, {
+        download:true,
+        header:false,
+        skipEmptyLines:true,
+        encoding:"UTF-8",
+        complete:function(results){
+          try{
+            const dataRows = results.data.slice(1); // skip A/B/C header row
+            const newSongs = dataRows.map(row=>{
+              const title = row[0] ? String(row[0]).replace(/^\uFEFF/,"").trim() : "";
+              const artist = row[1] ? String(row[1]).trim() : "";
+              const genre = row[2] ? String(row[2]).trim() : "";
+              return { title, artist, genre };
+            }).filter(r => r.title.length>0);
+            lastSongTitles = songs.map(s=>s.title);
+            songs = newSongs;
+            renderGenreOptions();
+            renderSongs(searchInput.value);
+          }catch(e){
+            songList.innerHTML = `<li class="center" style="color:tomato">Error parsing data</li>`;
+          }
+        },
+        error:function(err){
+          songList.innerHTML = `<li class="center" style="color:tomato">Error: ${err.message}</li>`;
+        }
+      });
+    }
+
+    // Events
+    searchInput.addEventListener("input", e => renderSongs(e.target.value));
+    genreFilter.addEventListener("change", e => {
+      currentGenre = e.target.value || "all";
       renderSongs(searchInput.value);
-    },
-    error:function(err){
-      songList.innerHTML=`<li class="center" style="color:tomato">Error: ${err.message}</li>`;
-    }
-  });
-}
+    });
 
-searchInput.addEventListener("input",e=>renderSongs(e.target.value));
-genreFilter.addEventListener("change",e=>{
-  currentGenre = e.target.value;
-  renderSongs(searchInput.value);
-});
-
-document.getElementById("enterButton").addEventListener("click",()=>{
-  welcomeScreen.style.opacity = "0";
-  setTimeout(()=>{
-    welcomeScreen.style.display="none";
-    mainContainer.classList.add("visible");
-    fetchSongs();
-    setInterval(fetchSongs,30000);
-  },500);
-});
-</script>
+    // Enter button: hide welcome, show main, start fetching songs
+    document.getElementById("enterButton").addEventListener("click", ()=>{
+      welcomeScreen.style.opacity = "0";
+      setTimeout(()=> {
+        welcomeScreen.style.display = "none";
+        mainContainer.classList.add("visible");
+        fetchSongs();
+        setInterval(fetchSongs, 30000); // refresh every 30s
+      },500);
+    });
+  </script>
 </body>
 </html>
