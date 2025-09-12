@@ -15,7 +15,7 @@ body {
   flex-direction:column;
 }
 
-/* Welcome Screen */
+/* Welcome Screen with background image */
 #welcomeScreen {
   flex:1;
   display:flex;
@@ -25,10 +25,31 @@ body {
   text-align:center;
   opacity:1;
   transition:opacity 0.5s;
-  background: rgba(31,41,55,0.9);
   border-radius:12px;
   margin:16px;
   padding:24px;
+  position:relative;
+  overflow:hidden;
+}
+#welcomeScreen::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:url("https://i.imgur.com/9pTrO04.jpeg") no-repeat center center/cover;
+  z-index:0;
+}
+#welcomeScreen::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.6); /* dark overlay for readability */
+  z-index:1;
+}
+#welcomeScreen h1,
+#welcomeScreen p,
+#welcomeScreen button {
+  position:relative;
+  z-index:2;
 }
 #welcomeScreen h1 {font-size:2rem;margin-bottom:16px;}
 #welcomeScreen p {margin-bottom:24px;color:#d1d5db;font-size:1rem;}
@@ -137,7 +158,13 @@ li.center {
 }
 
 /* Footer */
-footer {padding:10px;text-align:center;background:#1f2937;font-size:.9rem;color:#9ca3af;}
+footer {
+  padding:10px;
+  text-align:center;
+  background:#1f2937;
+  font-size:.9rem;
+  color:#9ca3af;
+}
 </style>
 </head>
 <body>
@@ -164,7 +191,7 @@ footer {padding:10px;text-align:center;background:#1f2937;font-size:.9rem;color:
   </main>
 </div>
 
-<footer>Made with ❤️ Starlight Karaoke</footer>
+<footer>Made with ❤️ for your Karaoke Room</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 <script>
