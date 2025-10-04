@@ -11,7 +11,62 @@
       color: #eee;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* Welcome Screen */
+    #welcomeScreen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px;
+      transition: opacity 0.6s ease;
+      position: relative;
+    }
+    #welcomeScreen h1 {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      color: #ff79c6;
+      text-shadow: 0 0 10px rgba(255,121,198,0.6);
+    }
+    #welcomeScreen p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+    #enterButton {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #7c3aed;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+    #enterButton:hover {
+      background: #5b21b6;
+      transform: translateY(-2px);
+    }
+
+    /* Main Container */
+    #mainContainer {
+      display: none;
+      flex: 1;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      padding-bottom: 40px;
+    }
+    #mainContainer.visible {
+      display: block;
+      opacity: 1;
+    }
+
     h1 {
       text-align: center;
       margin: 20px 0;
@@ -19,6 +74,8 @@
       color: #ff79c6;
       text-shadow: 0 0 8px rgba(255, 121, 198, 0.6);
     }
+
+    /* Filters */
     #controls {
       display: flex;
       flex-wrap: wrap;
@@ -42,6 +99,8 @@
     input:focus, select:focus {
       outline: 2px solid #ff79c6;
     }
+
+    /* Song Cards */
     #songList {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -78,22 +137,47 @@
       color: #aaa;
       padding: 20px;
     }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 12px;
+      font-size: 0.9rem;
+      background: #111;
+      color: #888;
+      margin-top: auto;
+    }
   </style>
 </head>
 <body>
-  <h1>🎤 Starlight Karaoke Song List 🎶</h1>
-
-  <div id="controls">
-    <input type="text" id="searchInput" placeholder="Search by song or artist...">
-    <select id="genreFilter"></select>
+  <!-- Welcome Screen -->
+  <div id="welcomeScreen">
+    <h1>🎤 Welcome to Starlight Karaoke 🎶</h1>
+    <p>Click below to explore the full song list and get ready to sing!</p>
+    <button id="enterButton">Enter Song List</button>
   </div>
 
-  <ul id="songList"></ul>
+  <!-- Main Container -->
+  <div id="mainContainer">
+    <h1>Starlight Karaoke Song List</h1>
+    <div id="controls">
+      <input type="text" id="searchInput" placeholder="Search by song or artist...">
+      <select id="genreFilter"></select>
+    </div>
+    <ul id="songList">
+      <li class="center">Loading songs...</li>
+    </ul>
+  </div>
 
+  <footer>Made with ❤️ by Starlight Karaoke</footer>
+
+  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTolM1gw_aADMSzbb-nMyJTCj2yBxbqmUgJ_CYWPuIyXXAnOide38qpGmTAjwjHA1QaVwKW5l7HfID9/pub?gid=0&single=true&output=csv";
 
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const mainContainer = document.getElementById("mainContainer");
     const songList = document.getElementById("songList");
     const searchInput = document.getElementById("searchInput");
     const genreFilter = document.getElementById("genreFilter");
@@ -101,14 +185,23 @@
     let songs = [];
     let currentGenre = "all";
 
+    // Escape HTML
     const escapeHtml = (str = "") => str.replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
 
+    // Render genre options (no duplicates, case-insensitive)
     function renderGenreOptions() {
-      const uniqueGenres = [...new Map(songs.map(s => [s.genre?.toLowerCase(), s.genre])).values()]
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+      const map = {};
+      songs.forEach(({ genre }) => {
+        if (!genre) return;
+        const g = genre.trim();
+        const key = g.toLowerCase();
+        if (!map[key]) map[key] = g;
+      });
+      const uniqueGenres = Object.values(map).sort((a, b) =>
+        a.toLowerCase().localeCompare(b.toLowerCase())
+      );
 
       genreFilter.innerHTML = '<option value="all">All Genres</option>';
       uniqueGenres.forEach(g => {
@@ -117,8 +210,15 @@
         opt.textContent = g;
         genreFilter.appendChild(opt);
       });
+
+      if ([...genreFilter.options].some(o => o.value === currentGenre)) {
+        genreFilter.value = currentGenre;
+      } else {
+        genreFilter.value = "all";
+      }
     }
 
+    // Render songs
     function renderSongs(query = "") {
       songList.innerHTML = "";
       const q = query.toLowerCase().trim();
@@ -143,12 +243,13 @@
       });
     }
 
+    // Fetch songs from Google Sheet
     function fetchSongs() {
       Papa.parse(sheetURL, {
         download: true,
         skipEmptyLines: true,
         complete: ({ data }) => {
-          const rows = data.slice(1); // skip header row
+          const rows = data.slice(1); // skip header
           songs = rows.map(([title, artist, genre]) => ({
             title: title?.trim().replace(/^\uFEFF/, "") || "",
             artist: artist?.trim() || "",
@@ -161,13 +262,23 @@
       });
     }
 
+    // Event listeners
     searchInput.addEventListener("input", e => renderSongs(e.target.value));
     genreFilter.addEventListener("change", e => {
       currentGenre = e.target.value || "all";
       renderSongs(searchInput.value);
     });
 
-    fetchSongs();
+    // Welcome button
+    document.getElementById("enterButton").addEventListener("click", () => {
+      welcomeScreen.style.opacity = "0";
+      setTimeout(() => {
+        welcomeScreen.style.display = "none";
+        mainContainer.classList.add("visible");
+        fetchSongs();
+        setInterval(fetchSongs, 30000); // refresh every 30s
+      }, 600);
+    });
   </script>
 </body>
 </html>
