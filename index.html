@@ -108,6 +108,8 @@
       max-width: 1000px;
       margin: 0 auto 40px;
       padding: 0 20px;
+      min-height: 100px; /* ensures spinner is centered */
+      position: relative;
     }
     li.song {
       list-style: none;
@@ -116,6 +118,7 @@
       background: #1f1f1f;
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
     }
     li.song:hover {
       transform: translateY(-4px);
@@ -131,6 +134,22 @@
       font-size: 14px;
       color: #bbb;
     }
+
+    /* New Badge */
+    .new-badge {
+      background: #ff79c6;
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      margin-left: 6px;
+      border-radius: 6px;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
     .center {
       grid-column: 1 / -1;
       text-align: center;
@@ -147,9 +166,25 @@
       color: #888;
       margin-top: auto;
     }
+
+    /* Spinner */
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top: 4px solid #ff79c6;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 30px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
   </style>
 </head>
 <body>
+
   <!-- Welcome Screen -->
   <div id="welcomeScreen">
     <h1>🎤 Welcome to Starlight Karaoke 🎶</h1>
@@ -165,13 +200,12 @@
       <select id="genreFilter"></select>
     </div>
     <ul id="songList">
-      <li class="center">Loading songs...</li>
+      <div class="spinner"></div>
     </ul>
   </div>
 
   <footer>Made with ❤️ by Starlight Karaoke</footer>
 
-  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTolM1gw_aADMSzbb-nMyJTCj2yBxbqmUgJ_CYWPuIyXXAnOide38qpGmTAjwjHA1QaVwKW5l7HfID9/pub?gid=0&single=true&output=csv";
@@ -183,78 +217,81 @@
     const genreFilter = document.getElementById("genreFilter");
 
     let songs = [];
+    let lastSongTitles = new Set();
     let currentGenre = "all";
 
-    // Escape HTML
     const escapeHtml = (str = "") => str.replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;', "'": "&#39;"
     }[c]));
 
-    // Render genre options (no duplicates, case-insensitive)
     function renderGenreOptions() {
-      const map = {};
+      const genreMap = new Map();
       songs.forEach(({ genre }) => {
         if (!genre) return;
-        const g = genre.trim();
-        const key = g.toLowerCase();
-        if (!map[key]) map[key] = g;
+        const clean = genre.trim();
+        const key = clean.toLowerCase();
+        if (!genreMap.has(key)) genreMap.set(key, clean);
       });
-      const uniqueGenres = Object.values(map).sort((a, b) =>
-        a.toLowerCase().localeCompare(b.toLowerCase())
-      );
+      const uniqueGenres = Array.from(genreMap.values())
+        .sort((a,b)=> a.toLowerCase().localeCompare(b.toLowerCase()));
 
       genreFilter.innerHTML = '<option value="all">All Genres</option>';
-      uniqueGenres.forEach(g => {
+      uniqueGenres.forEach(g=>{
         const opt = document.createElement("option");
         opt.value = g.toLowerCase();
         opt.textContent = g;
         genreFilter.appendChild(opt);
       });
-
-      if ([...genreFilter.options].some(o => o.value === currentGenre)) {
-        genreFilter.value = currentGenre;
-      } else {
-        genreFilter.value = "all";
-      }
+      genreFilter.value = currentGenre || "all";
     }
 
-    // Render songs
-    function renderSongs(query = "") {
-      songList.innerHTML = "";
+    function renderSongs(query="") {
+      songList.innerHTML = ""; // clear spinner
       const q = query.toLowerCase().trim();
-
-      const filtered = songs.filter(({ title, artist, genre }) =>
-        title &&
-        (currentGenre === "all" || (genre || "").toLowerCase() === currentGenre) &&
-        (title.toLowerCase().includes(q) || (artist || "").toLowerCase().includes(q))
+      const filtered = songs.filter(({title, artist, genre}) => 
+        title && (currentGenre==="all" || (genre||"").toLowerCase()===currentGenre) &&
+        (title.toLowerCase().includes(q) || (artist||"").toLowerCase().includes(q))
       );
 
-      if (!filtered.length) {
+      if(!filtered.length){
         songList.innerHTML = `<li class="center">No songs found</li>`;
         return;
       }
 
-      filtered.forEach(({ title, artist }) => {
+      filtered.forEach(({title, artist})=>{
         const li = document.createElement("li");
         li.className = "song";
-        li.innerHTML = `<h2>${escapeHtml(title)}</h2>
-                        <p>by ${escapeHtml(artist || "Unknown")}</p>`;
+
+        let newBadge = "";
+        if(!lastSongTitles.has(title)){
+          newBadge = `<span class="new-badge">🆕 New</span>`;
+        }
+
+        li.innerHTML = `<h2>${escapeHtml(title)} ${newBadge}</h2>
+                        <p>by ${escapeHtml(artist||"Unknown")}</p>`;
         songList.appendChild(li);
+
+        if(newBadge){
+          const badgeEl = li.querySelector(".new-badge");
+          setTimeout(()=> badgeEl.remove(), 120000);
+        }
       });
+
+      filtered.forEach(({title}) => lastSongTitles.add(title));
     }
 
-    // Fetch songs from Google Sheet
-    function fetchSongs() {
+    function fetchSongs(){
+      songList.innerHTML = `<div class="spinner"></div>`;
       Papa.parse(sheetURL, {
         download: true,
         skipEmptyLines: true,
-        complete: ({ data }) => {
+        complete: ({ data })=>{
           const rows = data.slice(1); // skip header
-          songs = rows.map(([title, artist, genre]) => ({
-            title: title?.trim().replace(/^\uFEFF/, "") || "",
-            artist: artist?.trim() || "",
-            genre: genre?.trim() || ""
-          })).filter(({ title }) => title);
+          songs = rows.map(([title, artist, genre])=>({
+            title: title?.trim().replace(/^\uFEFF/,"")||"",
+            artist: artist?.trim()||"",
+            genre: genre?.trim()||""
+          })).filter(({title})=> title);
 
           renderGenreOptions();
           renderSongs(searchInput.value);
@@ -262,22 +299,20 @@
       });
     }
 
-    // Event listeners
-    searchInput.addEventListener("input", e => renderSongs(e.target.value));
-    genreFilter.addEventListener("change", e => {
-      currentGenre = e.target.value || "all";
+    searchInput.addEventListener("input", e=>renderSongs(e.target.value));
+    genreFilter.addEventListener("change", e=>{
+      currentGenre = e.target.value||"all";
       renderSongs(searchInput.value);
     });
 
-    // Welcome button
-    document.getElementById("enterButton").addEventListener("click", () => {
+    document.getElementById("enterButton").addEventListener("click", ()=>{
       welcomeScreen.style.opacity = "0";
-      setTimeout(() => {
+      setTimeout(()=>{
         welcomeScreen.style.display = "none";
         mainContainer.classList.add("visible");
         fetchSongs();
-        setInterval(fetchSongs, 30000); // refresh every 30s
-      }, 600);
+        setInterval(fetchSongs, 30000);
+      },600);
     });
   </script>
 </body>
