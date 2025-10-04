@@ -6,52 +6,77 @@
   <title>Starlight Karaoke Song List</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #111;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
       color: #eee;
       margin: 0;
-      padding: 20px;
+      padding: 0;
     }
     h1 {
       text-align: center;
-      margin-bottom: 20px;
+      margin: 20px 0;
+      font-size: 2rem;
+      color: #ff79c6;
+      text-shadow: 0 0 8px rgba(255, 121, 198, 0.6);
     }
     #controls {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin: 0 auto 20px;
+      padding: 10px;
+      max-width: 800px;
     }
     input, select {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #555;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
       background: #222;
       color: #eee;
+      font-size: 14px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.4) inset;
     }
-    ul {
-      list-style: none;
-      padding: 0;
+    input:focus, select:focus {
+      outline: 2px solid #ff79c6;
+    }
+    #songList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      max-width: 1000px;
+      margin: 0 auto 40px;
+      padding: 0 20px;
     }
     li.song {
-      padding: 10px;
-      margin-bottom: 8px;
-      background: #1a1a1a;
-      border-radius: 6px;
+      list-style: none;
+      padding: 16px;
+      border-radius: 12px;
+      background: #1f1f1f;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    li.song:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(255,121,198,0.3);
     }
     li.song h2 {
       margin: 0;
       font-size: 18px;
+      color: #fff;
     }
     li.song p {
-      margin: 5px 0 0;
+      margin: 6px 0 0;
       font-size: 14px;
-      color: #aaa;
+      color: #bbb;
     }
     .center {
+      grid-column: 1 / -1;
       text-align: center;
-      margin-top: 20px;
       color: #aaa;
+      padding: 20px;
     }
   </style>
 </head>
@@ -113,50 +138,35 @@
         const li = document.createElement("li");
         li.className = "song";
         li.innerHTML = `<h2>${escapeHtml(title)}</h2>
-                        <p class="artist">by ${escapeHtml(artist || "Unknown")}</p>`;
+                        <p>by ${escapeHtml(artist || "Unknown")}</p>`;
         songList.appendChild(li);
       });
     }
 
     function fetchSongs() {
-      console.log("Fetching songs from:", sheetURL);
       Papa.parse(sheetURL, {
         download: true,
         skipEmptyLines: true,
         complete: ({ data }) => {
-          console.log("Raw data:", data);
+          const rows = data.slice(1); // skip header row
+          songs = rows.map(([title, artist, genre]) => ({
+            title: title?.trim().replace(/^\uFEFF/, "") || "",
+            artist: artist?.trim() || "",
+            genre: genre?.trim() || ""
+          })).filter(({ title }) => title);
 
-          try {
-            const rows = data.slice(1); // skip header row
-            songs = rows.map(([title, artist, genre]) => ({
-              title: title?.trim().replace(/^\uFEFF/, "") || "",
-              artist: artist?.trim() || "",
-              genre: genre?.trim() || ""
-            })).filter(({ title }) => title);
-
-            console.log("Parsed songs:", songs);
-            renderGenreOptions();
-            renderSongs(searchInput.value);
-          } catch (e) {
-            console.error("Parse error:", e);
-            songList.innerHTML = `<li class="center" style="color:tomato">Error parsing data</li>`;
-          }
-        },
-        error: err => {
-          console.error("PapaParse error:", err);
-          songList.innerHTML = `<li class="center" style="color:tomato">Error: ${err.message}</li>`;
+          renderGenreOptions();
+          renderSongs(searchInput.value);
         }
       });
     }
 
-    // Events
     searchInput.addEventListener("input", e => renderSongs(e.target.value));
     genreFilter.addEventListener("change", e => {
       currentGenre = e.target.value || "all";
       renderSongs(searchInput.value);
     });
 
-    // Fetch immediately when page loads
     fetchSongs();
   </script>
 </body>
