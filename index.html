@@ -56,14 +56,13 @@
 
     /* Main Container */
     #mainContainer {
-      display: none;
+      display: none; /* hide initially */
       flex: 1;
       opacity: 0;
       transition: opacity 0.6s ease;
       padding-bottom: 40px;
     }
     #mainContainer.visible {
-      display: block;
       opacity: 1;
     }
 
@@ -108,7 +107,7 @@
       max-width: 1000px;
       margin: 0 auto 40px;
       padding: 0 20px;
-      min-height: 100px; /* ensures spinner is centered */
+      min-height: 100px;
       position: relative;
     }
     li.song {
@@ -208,111 +207,113 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTolM1gw_aADMSzbb-nMyJTCj2yBxbqmUgJ_CYWPuIyXXAnOide38qpGmTAjwjHA1QaVwKW5l7HfID9/pub?gid=0&single=true&output=csv";
+    document.addEventListener("DOMContentLoaded", () => {
+      const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTolM1gw_aADMSzbb-nMyJTCj2yBxbqmUgJ_CYWPuIyXXAnOide38qpGmTAjwjHA1QaVwKW5l7HfID9/pub?gid=0&single=true&output=csv";
+      const welcomeScreen = document.getElementById("welcomeScreen");
+      const mainContainer = document.getElementById("mainContainer");
+      const songList = document.getElementById("songList");
+      const searchInput = document.getElementById("searchInput");
+      const genreFilter = document.getElementById("genreFilter");
+      const enterButton = document.getElementById("enterButton");
 
-    const welcomeScreen = document.getElementById("welcomeScreen");
-    const mainContainer = document.getElementById("mainContainer");
-    const songList = document.getElementById("songList");
-    const searchInput = document.getElementById("searchInput");
-    const genreFilter = document.getElementById("genreFilter");
+      let songs = [];
+      let lastSongTitles = new Set();
+      let currentGenre = "all";
 
-    let songs = [];
-    let lastSongTitles = new Set();
-    let currentGenre = "all";
+      const escapeHtml = (str = "") => str.replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;', "'": "&#39;"
+      }[c]));
 
-    const escapeHtml = (str = "") => str.replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;', "'": "&#39;"
-    }[c]));
-
-    function renderGenreOptions() {
-      const genreMap = new Map();
-      songs.forEach(({ genre }) => {
-        if (!genre) return;
-        const clean = genre.trim();
-        const key = clean.toLowerCase();
-        if (!genreMap.has(key)) genreMap.set(key, clean);
-      });
-      const uniqueGenres = Array.from(genreMap.values())
-        .sort((a,b)=> a.toLowerCase().localeCompare(b.toLowerCase()));
-
-      genreFilter.innerHTML = '<option value="all">All Genres</option>';
-      uniqueGenres.forEach(g=>{
-        const opt = document.createElement("option");
-        opt.value = g.toLowerCase();
-        opt.textContent = g;
-        genreFilter.appendChild(opt);
-      });
-      genreFilter.value = currentGenre || "all";
-    }
-
-    function renderSongs(query="") {
-      songList.innerHTML = ""; // clear spinner
-      const q = query.toLowerCase().trim();
-      const filtered = songs.filter(({title, artist, genre}) => 
-        title && (currentGenre==="all" || (genre||"").toLowerCase()===currentGenre) &&
-        (title.toLowerCase().includes(q) || (artist||"").toLowerCase().includes(q))
-      );
-
-      if(!filtered.length){
-        songList.innerHTML = `<li class="center">No songs found</li>`;
-        return;
+      function renderGenreOptions() {
+        const genreMap = new Map();
+        songs.forEach(({ genre }) => {
+          if (!genre) return;
+          const clean = genre.trim();
+          const key = clean.toLowerCase();
+          if (!genreMap.has(key)) genreMap.set(key, clean);
+        });
+        const uniqueGenres = Array.from(genreMap.values())
+          .sort((a,b)=> a.toLowerCase().localeCompare(b.toLowerCase()));
+        genreFilter.innerHTML = '<option value="all">All Genres</option>';
+        uniqueGenres.forEach(g=>{
+          const opt = document.createElement("option");
+          opt.value = g.toLowerCase();
+          opt.textContent = g;
+          genreFilter.appendChild(opt);
+        });
+        genreFilter.value = currentGenre || "all";
       }
 
-      filtered.forEach(({title, artist})=>{
-        const li = document.createElement("li");
-        li.className = "song";
+      function renderSongs(query="") {
+        songList.innerHTML = ""; // clear spinner
+        const q = query.toLowerCase().trim();
+        const filtered = songs.filter(({title, artist, genre}) => 
+          title && (currentGenre==="all" || (genre||"").toLowerCase()===currentGenre) &&
+          (title.toLowerCase().includes(q) || (artist||"").toLowerCase().includes(q))
+        );
 
-        let newBadge = "";
-        if(!lastSongTitles.has(title)){
-          newBadge = `<span class="new-badge">🆕 New</span>`;
+        if(!filtered.length){
+          songList.innerHTML = `<li class="center">No songs found</li>`;
+          return;
         }
 
-        li.innerHTML = `<h2>${escapeHtml(title)} ${newBadge}</h2>
-                        <p>by ${escapeHtml(artist||"Unknown")}</p>`;
-        songList.appendChild(li);
+        filtered.forEach(({title, artist})=>{
+          const li = document.createElement("li");
+          li.className = "song";
 
-        if(newBadge){
-          const badgeEl = li.querySelector(".new-badge");
-          setTimeout(()=> badgeEl.remove(), 120000);
-        }
+          let newBadge = "";
+          if(!lastSongTitles.has(title)){
+            newBadge = `<span class="new-badge">🆕 New</span>`;
+          }
+
+          li.innerHTML = `<h2>${escapeHtml(title)} ${newBadge}</h2>
+                          <p>by ${escapeHtml(artist||"Unknown")}</p>`;
+          songList.appendChild(li);
+
+          if(newBadge){
+            const badgeEl = li.querySelector(".new-badge");
+            setTimeout(()=> badgeEl.remove(), 120000);
+          }
+        });
+
+        filtered.forEach(({title}) => lastSongTitles.add(title));
+      }
+
+      function fetchSongs(){
+        songList.innerHTML = `<div class="spinner"></div>`;
+        Papa.parse(sheetURL, {
+          download: true,
+          skipEmptyLines: true,
+          complete: ({ data })=>{
+            const rows = data.slice(1); // skip header
+            songs = rows.map(([title, artist, genre])=>({
+              title: title?.trim().replace(/^\uFEFF/,"")||"",
+              artist: artist?.trim()||"",
+              genre: genre?.trim()||""
+            })).filter(({title})=> title);
+
+            renderGenreOptions();
+            renderSongs(searchInput.value);
+          }
+        });
+      }
+
+      searchInput.addEventListener("input", e=>renderSongs(e.target.value));
+      genreFilter.addEventListener("change", e=>{
+        currentGenre = e.target.value||"all";
+        renderSongs(searchInput.value);
       });
 
-      filtered.forEach(({title}) => lastSongTitles.add(title));
-    }
-
-    function fetchSongs(){
-      songList.innerHTML = `<div class="spinner"></div>`;
-      Papa.parse(sheetURL, {
-        download: true,
-        skipEmptyLines: true,
-        complete: ({ data })=>{
-          const rows = data.slice(1); // skip header
-          songs = rows.map(([title, artist, genre])=>({
-            title: title?.trim().replace(/^\uFEFF/,"")||"",
-            artist: artist?.trim()||"",
-            genre: genre?.trim()||""
-          })).filter(({title})=> title);
-
-          renderGenreOptions();
-          renderSongs(searchInput.value);
-        }
+      enterButton.addEventListener("click", ()=>{
+        welcomeScreen.style.opacity = "0";
+        setTimeout(()=>{
+          welcomeScreen.style.display = "none";
+          mainContainer.style.display = "block";
+          setTimeout(()=> mainContainer.classList.add("visible"), 50);
+          fetchSongs();
+          setInterval(fetchSongs, 30000);
+        },600);
       });
-    }
-
-    searchInput.addEventListener("input", e=>renderSongs(e.target.value));
-    genreFilter.addEventListener("change", e=>{
-      currentGenre = e.target.value||"all";
-      renderSongs(searchInput.value);
-    });
-
-    document.getElementById("enterButton").addEventListener("click", ()=>{
-      welcomeScreen.style.opacity = "0";
-      setTimeout(()=>{
-        welcomeScreen.style.display = "none";
-        mainContainer.classList.add("visible");
-        fetchSongs();
-        setInterval(fetchSongs, 30000);
-      },600);
     });
   </script>
 </body>
