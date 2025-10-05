@@ -2,294 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Starlight Karaoke Song List</title>
   <style>
     body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-      color: #eee;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Welcome Screen */
-    #welcomeScreen {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 40px;
-      transition: opacity 0.6s ease;
-      position: relative;
-    }
-    #welcomeScreen h1 {
-      font-size: 2.2rem;
-      margin-bottom: 16px;
-      color: #ff79c6;
-      text-shadow: 0 0 10px rgba(255,121,198,0.6);
-    }
-    #welcomeScreen p {
-      font-size: 1rem;
-      margin-bottom: 20px;
-      color: #ccc;
-    }
-    #enterButton {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #7c3aed;
-      color: #fff;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s;
-    }
-    #enterButton:hover {
-      background: #5b21b6;
-      transform: translateY(-2px);
-    }
-
-    /* Main Container */
-    #mainContainer {
-      display: none; /* hide initially */
-      flex: 1;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-      padding-bottom: 40px;
-    }
-    #mainContainer.visible {
-      opacity: 1;
-    }
-
-    h1 {
-      text-align: center;
-      margin: 20px 0;
-      font-size: 2rem;
-      color: #ff79c6;
-      text-shadow: 0 0 8px rgba(255, 121, 198, 0.6);
-    }
-
-    /* Filters */
-    #controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-      margin: 0 auto 20px;
-      padding: 10px;
-      max-width: 800px;
-    }
-    input, select {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: #eee;
-      font-size: 14px;
-      flex: 1;
-      min-width: 200px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.4) inset;
-    }
-    input:focus, select:focus {
-      outline: 2px solid #ff79c6;
-    }
-
-    /* Song Cards */
-    #songList {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 16px;
-      max-width: 1000px;
-      margin: 0 auto 40px;
-      padding: 0 20px;
-      min-height: 100px;
-      position: relative;
-    }
-    li.song {
-      list-style: none;
-      padding: 16px;
-      border-radius: 12px;
-      background: #1f1f1f;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-    li.song:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 16px rgba(255,121,198,0.3);
-    }
-    li.song h2 {
-      margin: 0;
-      font-size: 18px;
-      color: #fff;
-    }
-    li.song p {
-      margin: 6px 0 0;
-      font-size: 14px;
-      color: #bbb;
-    }
-
-    .center {
-      grid-column: 1 / -1;
-      text-align: center;
-      color: #aaa;
       padding: 20px;
-    }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 12px;
-      font-size: 0.9rem;
       background: #111;
-      color: #888;
-      margin-top: auto;
+      color: #fff;
     }
-
-    /* Spinner */
-    .spinner {
-      border: 4px solid rgba(255,255,255,0.1);
-      border-top: 4px solid #ff79c6;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      animation: spin 1s linear infinite;
-      margin: 30px auto;
+    h1 {
+      color: #fdd835;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
+    select, button {
+      margin: 10px;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 8px;
+    }
+    #songDisplay {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #f5f5f5;
     }
   </style>
 </head>
 <body>
+  <h1>🌟 Starlight Karaoke Song List 🌟</h1>
 
-  <!-- Welcome Screen -->
-  <div id="welcomeScreen">
-    <h1>🎤 Welcome to Starlight Karaoke 🎶</h1>
-    <p>Click below to explore the full song list and get ready to sing!</p>
-    <button id="enterButton">Enter Song List</button>
-  </div>
+  <!-- Dropdown for artists -->
+  <label for="artistSelect">Choose an Artist:</label>
+  <select id="artistSelect">
+    <option value="">-- Select an Artist --</option>
+  </select>
 
-  <!-- Main Container -->
-  <div id="mainContainer">
-    <h1>Starlight Karaoke Song List</h1>
-    <div id="controls">
-      <input type="text" id="searchInput" placeholder="Search by song or artist...">
-      <select id="genreFilter"></select>
-    </div>
-    <ul id="songList">
-      <div class="spinner"></div>
-    </ul>
-  </div>
+  <!-- Dropdown for songs -->
+  <label for="songSelect">Choose a Song:</label>
+  <select id="songSelect">
+    <option value="">-- Select a Song --</option>
+  </select>
 
-  <footer>Made with ❤️ by Starlight Karaoke</footer>
+  <br>
+  <button id="showBtn">Enter Song List</button>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <div id="songDisplay"></div>
+
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTolM1gw_aADMSzbb-nMyJTCj2yBxbqmUgJ_CYWPuIyXXAnOide38qpGmTAjwjHA1QaVwKW5l7HfID9/pub?gid=0&single=true&output=csv";
+    // Example song data
+    const songs = [
+      { title: "Someone Like You", artist: "Adele" },
+      { title: "Rolling in the Deep", artist: "Adele" },
+      { title: "Shape of You", artist: "Ed Sheeran" },
+      { title: "Perfect", artist: "Ed Sheeran" },
+      { title: "Bad Romance", artist: "Lady Gaga" },
+      { title: "Shallow", artist: "Lady Gaga" }
+    ];
 
-      const welcomeScreen = document.getElementById("welcomeScreen");
-      const mainContainer = document.getElementById("mainContainer");
-      const songList = document.getElementById("songList");
-      const searchInput = document.getElementById("searchInput");
-      const genreFilter = document.getElementById("genreFilter");
-      const enterButton = document.getElementById("enterButton");
+    const songSelect = document.getElementById("songSelect");
+    const artistSelect = document.getElementById("artistSelect");
+    const display = document.getElementById("songDisplay");
 
-      let songs = [];
-      let currentGenre = "all";
+    // Populate artist dropdown (unique values)
+    const uniqueArtists = [...new Set(songs.map(song => song.artist))];
+    uniqueArtists.forEach(artist => {
+      const option = document.createElement("option");
+      option.value = artist;
+      option.textContent = artist;
+      artistSelect.appendChild(option);
+    });
 
-      const escapeHtml = (str = "") => str.replace(/[&<>"']/g, c => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[c]));
-
-      function renderGenreOptions() {
-        const genreMap = new Map();
-        songs.forEach(({ genre }) => {
-          if (!genre) return;
-          const clean = genre.trim();
-          const key = clean.toLowerCase();
-          if (!genreMap.has(key)) genreMap.set(key, clean);
-        });
-        const uniqueGenres = Array.from(genreMap.values())
-          .sort((a,b)=> a.toLowerCase().localeCompare(b.toLowerCase()));
-        genreFilter.innerHTML = '<option value="all">All Genres</option>';
-        uniqueGenres.forEach(g=>{
-          const opt = document.createElement("option");
-          opt.value = g.toLowerCase();
-          opt.textContent = g;
-          genreFilter.appendChild(opt);
-        });
-        genreFilter.value = currentGenre || "all";
-      }
-
-      function renderSongs(query="") {
-        songList.innerHTML = ""; // clear spinner
-        const q = query.toLowerCase().trim();
-        const filtered = songs.filter(({title, artist, genre}) => 
-          title && (currentGenre==="all" || (genre||"").toLowerCase()===currentGenre) &&
-          (title.toLowerCase().includes(q) || (artist||"").toLowerCase().includes(q))
-        );
-
-        if(!filtered.length){
-          songList.innerHTML = `<li class="center">No songs found</li>`;
-          return;
-        }
-
-        filtered.forEach(({title, artist})=>{
-          const li = document.createElement("li");
-          li.className = "song";
-          li.innerHTML = `<h2>${escapeHtml(title)}</h2>
-                          <p>by ${escapeHtml(artist||"Unknown")}</p>`;
-          songList.appendChild(li);
-        });
-      }
-
-      function fetchSongs(){
-        songList.innerHTML = `<div class="spinner"></div>`;
-        Papa.parse(sheetURL, {
-          download: true,
-          skipEmptyLines: true,
-          complete: ({ data })=>{
-            const rows = data.slice(1); // skip header
-            songs = rows.map(([title, artist, genre])=>({
-              title: title?.trim().replace(/^\uFEFF/,"")||"",
-              artist: artist?.trim()||"",
-              genre: genre?.trim()||""
-            })).filter(({title})=> title);
-
-            renderGenreOptions();
-            renderSongs(searchInput.value);
-          }
-        });
-      }
-
-      searchInput.addEventListener("input", e=>renderSongs(e.target.value));
-      genreFilter.addEventListener("change", e=>{
-        currentGenre = e.target.value||"all";
-        renderSongs(searchInput.value);
+    // Function to populate songs dropdown
+    function populateSongs(artist = "") {
+      songSelect.innerHTML = '<option value="">-- Select a Song --</option>';
+      const filtered = artist ? songs.filter(s => s.artist === artist) : songs;
+      filtered.forEach(song => {
+        const option = document.createElement("option");
+        option.value = song.title;
+        option.textContent = song.title;
+        songSelect.appendChild(option);
       });
+    }
 
-      enterButton.addEventListener("click", ()=>{
-        welcomeScreen.style.opacity = "0";
-        setTimeout(()=>{
-          welcomeScreen.style.display = "none";
-          mainContainer.style.display = "block";
-          setTimeout(()=> mainContainer.classList.add("visible"), 50);
-          fetchSongs();
-          setInterval(fetchSongs, 30000);
-        },600);
-      });
+    // Initial load: show all songs
+    populateSongs();
+
+    // When artist is chosen, filter songs dropdown
+    artistSelect.addEventListener("change", () => {
+      populateSongs(artistSelect.value);
+    });
+
+    // Show result when button clicked
+    document.getElementById("showBtn").addEventListener("click", () => {
+      const selectedSong = songSelect.value;
+      const selectedArtist = artistSelect.value;
+
+      if (selectedSong) {
+        const found = songs.find(song => song.title === selectedSong);
+        display.textContent = `🎤 You chose: "${found.title}" by ${found.artist}`;
+      } else if (selectedArtist) {
+        const filtered = songs.filter(song => song.artist === selectedArtist);
+        display.innerHTML = `🎶 Songs by ${selectedArtist}:<br>` +
+          filtered.map(s => "- " + s.title).join("<br>");
+      } else {
+        display.textContent = "Please select a song or artist.";
+      }
     });
   </script>
 </body>
