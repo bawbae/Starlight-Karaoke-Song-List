@@ -134,21 +134,6 @@
       color: #bbb;
     }
 
-    /* New Badge */
-    .new-badge {
-      background: #ff79c6;
-      color: #fff;
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      margin-left: 6px;
-      border-radius: 6px;
-      animation: pulse 1.2s infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
     .center {
       grid-column: 1 / -1;
       text-align: center;
@@ -218,10 +203,8 @@
       const enterButton = document.getElementById("enterButton");
 
       let songs = [];
-      let lastSongTitles = new Set();
       let currentGenre = "all";
 
-      // Fixed escapeHtml function
       const escapeHtml = (str = "") => str.replace(/[&<>"']/g, c => ({
         "&": "&amp;",
         "<": "&lt;",
@@ -266,23 +249,10 @@
         filtered.forEach(({title, artist})=>{
           const li = document.createElement("li");
           li.className = "song";
-
-          let newBadge = "";
-          if(!lastSongTitles.has(title)){
-            newBadge = `<span class="new-badge">🆕 New</span>`;
-          }
-
-          li.innerHTML = `<h2>${escapeHtml(title)} ${newBadge}</h2>
+          li.innerHTML = `<h2>${escapeHtml(title)}</h2>
                           <p>by ${escapeHtml(artist||"Unknown")}</p>`;
           songList.appendChild(li);
-
-          if(newBadge){
-            const badgeEl = li.querySelector(".new-badge");
-            setTimeout(()=> badgeEl.remove(), 120000);
-          }
         });
-
-        filtered.forEach(({title}) => lastSongTitles.add(title));
       }
 
       function fetchSongs(){
