@@ -1,112 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Starlight Karaoke Song List</title>
+  <meta charset="utf-8">
+  <title>Starlight Karaoke — Welcome</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
+    :root { --bg: #0b0b0f; --accent: #fdd835; --card: #121217; --text: #fff; }
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: linear-gradient(180deg, var(--bg) 0%, #0f0f13 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 32px;
+    }
+    .wrap {
+      width: 980px;
+      max-width: 96%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
       text-align: center;
-      padding: 20px;
-      background: #111;
+    }
+    h1 { margin: 8px 0 6px; color: var(--accent); font-size: 30px; }
+    p.lead { margin: 0 0 18px; opacity: 0.9; }
+    .controls { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin: 14px 0; }
+    select, button {
+      padding: 10px 12px;
+      font-size: 15px;
+      border-radius: 10px;
+      border: 0;
+      background: var(--card);
+      color: var(--text);
+      min-width: 220px;
+    }
+    #enterBtn { background: linear-gradient(90deg,#fdd835,#ffb84d); color: #0b0b0b; cursor: pointer; }
+    #songDisplay {
+      margin-top: 18px;
+      font-size: 16px;
+      text-align: left;
+      background: rgba(0,0,0,0.25);
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 56px;
+      display: block;
       color: #fff;
     }
-    h1 {
-      color: #fdd835;
-    }
-    select, button {
-      margin: 10px;
-      padding: 8px;
-      font-size: 16px;
-      border-radius: 8px;
-    }
-    #songDisplay {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #f5f5f5;
-    }
+    .small { font-size:13px; opacity:0.85; margin-top:8px;}
   </style>
 </head>
 <body>
-  <h1>🌟 Starlight Karaoke Song List 🌟</h1>
+  <div class="wrap">
+    <h1>🌟 Welcome to Starlight Karaoke</h1>
+    <p class="lead">Pick an artist or a song — then click <strong>Enter Song List</strong>.</p>
 
-  <!-- Dropdown for artists -->
-  <label for="artistSelect">Choose an Artist:</label>
-  <select id="artistSelect">
-    <option value="">-- Select an Artist --</option>
-  </select>
+    <div class="controls" role="group" aria-label="song and artist controls">
+      <!-- Artist dropdown -->
+      <label style="display:block;">
+        <select id="artistSelect" aria-label="Choose an artist">
+          <option value="">-- All artists --</option>
+        </select>
+      </label>
 
-  <!-- Dropdown for songs -->
-  <label for="songSelect">Choose a Song:</label>
-  <select id="songSelect">
-    <option value="">-- Select a Song --</option>
-  </select>
+      <!-- Song dropdown -->
+      <label style="display:block;">
+        <select id="songSelect" aria-label="Choose a song">
+          <option value="">-- Select a song --</option>
+        </select>
+      </label>
 
-  <br>
-  <button id="showBtn">Enter Song List</button>
+      <button id="enterBtn">Enter Song List</button>
+    </div>
 
-  <div id="songDisplay"></div>
+    <div id="songDisplay" aria-live="polite">No selection yet.</div>
+    <div class="small">If your site still looks different, scroll down to the troubleshooting notes below.</div>
+  </div>
 
   <script>
-    // Example song data
-    const songs = [
+    // ---------- Replace this sample list with your real data if needed ----------
+    // Make sure there are no trailing commas or smart quotes in your real data.
+    let songs = [
       { title: "Someone Like You", artist: "Adele" },
       { title: "Rolling in the Deep", artist: "Adele" },
       { title: "Shape of You", artist: "Ed Sheeran" },
       { title: "Perfect", artist: "Ed Sheeran" },
       { title: "Bad Romance", artist: "Lady Gaga" },
-      { title: "Shallow", artist: "Lady Gaga" }
+      { title: "Shallow", artist: "Lady Gaga" },
+      { title: "Blinding Lights", artist: "The Weeknd" },
+      { title: "Levitating", artist: "Dua Lipa" },
+      { title: "Happier", artist: "Marshmello" },
+      { title: "Senorita", artist: "Shawn Mendes" }
     ];
+    // -------------------------------------------------------------------------
 
-    const songSelect = document.getElementById("songSelect");
-    const artistSelect = document.getElementById("artistSelect");
-    const display = document.getElementById("songDisplay");
+    const artistSelect = document.getElementById('artistSelect');
+    const songSelect = document.getElementById('songSelect');
+    const enterBtn = document.getElementById('enterBtn');
+    const display = document.getElementById('songDisplay');
 
-    // Populate artist dropdown (unique values)
-    const uniqueArtists = [...new Set(songs.map(song => song.artist))];
-    uniqueArtists.forEach(artist => {
-      const option = document.createElement("option");
-      option.value = artist;
-      option.textContent = artist;
-      artistSelect.appendChild(option);
-    });
+    function uniqueArtists(list) {
+      return Array.from(new Set(list.map(s => s.artist))).sort((a,b) => a.localeCompare(b));
+    }
 
-    // Function to populate songs dropdown
-    function populateSongs(artist = "") {
-      songSelect.innerHTML = '<option value="">-- Select a Song --</option>';
-      const filtered = artist ? songs.filter(s => s.artist === artist) : songs;
-      filtered.forEach(song => {
-        const option = document.createElement("option");
-        option.value = song.title;
-        option.textContent = song.title;
-        songSelect.appendChild(option);
+    function populateArtists() {
+      artistSelect.innerHTML = '<option value="">-- All artists --</option>';
+      const artists = uniqueArtists(songs);
+      artists.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        artistSelect.appendChild(opt);
       });
     }
 
-    // Initial load: show all songs
-    populateSongs();
+    function populateSongs(filterArtist = '') {
+      songSelect.innerHTML = '<option value="">-- Select a song --</option>';
+      const list = filterArtist ? songs.filter(s => s.artist === filterArtist) : songs;
+      list.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.title;
+        opt.textContent = s.title;
+        songSelect.appendChild(opt);
+      });
+    }
 
-    // When artist is chosen, filter songs dropdown
-    artistSelect.addEventListener("change", () => {
-      populateSongs(artistSelect.value);
+    // When user picks an artist, filter songs
+    artistSelect.addEventListener('change', (e) => {
+      const artist = e.target.value;
+      populateSongs(artist);
+      // If artist cleared, keep song cleared
+      songSelect.value = '';
+      display.textContent = artist ? `Showing songs by ${artist}.` : 'Showing all songs.';
     });
 
-    // Show result when button clicked
-    document.getElementById("showBtn").addEventListener("click", () => {
-      const selectedSong = songSelect.value;
-      const selectedArtist = artistSelect.value;
-
-      if (selectedSong) {
-        const found = songs.find(song => song.title === selectedSong);
-        display.textContent = `🎤 You chose: "${found.title}" by ${found.artist}`;
-      } else if (selectedArtist) {
-        const filtered = songs.filter(song => song.artist === selectedArtist);
-        display.innerHTML = `🎶 Songs by ${selectedArtist}:<br>` +
-          filtered.map(s => "- " + s.title).join("<br>");
-      } else {
-        display.textContent = "Please select a song or artist.";
+    // When user picks a song, auto-select its artist
+    songSelect.addEventListener('change', (e) => {
+      const title = e.target.value;
+      if (!title) return;
+      const found = songs.find(s => s.title === title);
+      if (found) {
+        // Set artist select and ensure the song remains visible & selected
+        artistSelect.value = found.artist;
+        populateSongs(found.artist);
+        songSelect.value = title;
+        display.textContent = `🎤 Selected: "${found.title}" — ${found.artist}`;
       }
     });
+
+    // Enter button: show final result
+    enterBtn.addEventListener('click', () => {
+      const s = songSelect.value;
+      const a = artistSelect.value;
+      if (s) {
+        const found = songs.find(x => x.title === s);
+        display.textContent = `🎤 You chose: "${found.title}" by ${found.artist}`;
+      } else if (a) {
+        const list = songs.filter(x => x.artist === a).map(x => '- ' + x.title).join('<br>');
+        display.innerHTML = `🎶 Songs by ${a}:<br>${list}`;
+      } else {
+        display.textContent = "Please select an artist or a song before entering.";
+      }
+    });
+
+    // Initialize on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      // If you load songs from a server, assign to "songs" before calling these.
+      populateArtists();
+      populateSongs();
+      console.log('Starlight Karaoke initialized — songs:', songs.length);
+    });
+
+    // If you load songs externally, use this pattern:
+    // fetch('/path/to/songs.json')
+    //  .then(r => r.json())
+    //  .then(data => { songs = data; populateArtists(); populateSongs(); });
   </script>
 </body>
 </html>
