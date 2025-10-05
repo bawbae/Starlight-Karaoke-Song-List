@@ -1,181 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Starlight Karaoke — Welcome</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starlight Karaoke Song List</title>
   <style>
-    :root { --bg: #0b0b0f; --accent: #fdd835; --card: #121217; --text: #fff; }
     body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      color: #eee;
       margin: 0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-      background: linear-gradient(180deg, var(--bg) 0%, #0f0f13 100%);
-      color: var(--text);
+      padding: 0;
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
+    }
+
+    /* Welcome Screen */
+    #welcomeScreen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
-      padding: 32px;
-    }
-    .wrap {
-      width: 980px;
-      max-width: 96%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius: 14px;
-      padding: 22px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      align-items: center;
       text-align: center;
+      padding: 40px;
+      transition: opacity 0.6s ease;
+      position: relative;
     }
-    h1 { margin: 8px 0 6px; color: var(--accent); font-size: 30px; }
-    p.lead { margin: 0 0 18px; opacity: 0.9; }
-    .controls { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin: 14px 0; }
-    select, button {
-      padding: 10px 12px;
-      font-size: 15px;
-      border-radius: 10px;
-      border: 0;
-      background: var(--card);
-      color: var(--text);
-      min-width: 220px;
+    #welcomeScreen h1 {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      color: #ff79c6;
+      text-shadow: 0 0 10px rgba(255,121,198,0.6);
     }
-    #enterBtn { background: linear-gradient(90deg,#fdd835,#ffb84d); color: #0b0b0b; cursor: pointer; }
-    #songDisplay {
-      margin-top: 18px;
-      font-size: 16px;
-      text-align: left;
-      background: rgba(0,0,0,0.25);
-      padding: 12px;
+    #welcomeScreen p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+    #enterButton {
+      padding: 12px 20px;
+      border: none;
       border-radius: 8px;
-      min-height: 56px;
-      display: block;
+      background: #7c3aed;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+    #enterButton:hover {
+      background: #5b21b6;
+      transform: translateY(-2px);
+    }
+
+    /* Main Container */
+    #mainContainer {
+      display: none; /* hide initially */
+      flex: 1;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      padding-bottom: 40px;
+    }
+    #mainContainer.visible {
+      opacity: 1;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 20px 0;
+      font-size: 2rem;
+      color: #ff79c6;
+      text-shadow: 0 0 8px rgba(255, 121, 198, 0.6);
+    }
+
+    /* Filters */
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin: 0 auto 20px;
+      padding: 10px;
+      max-width: 800px;
+    }
+    input, select {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #222;
+      color: #eee;
+      font-size: 14px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.4) inset;
+    }
+    input:focus, select:focus {
+      outline: 2px solid #ff79c6;
+    }
+
+    /* Song Cards */
+    #songList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      max-width: 1000px;
+      margin: 0 auto 40px;
+      padding: 0 20px;
+      min-height: 100px;
+      position: relative;
+    }
+    li.song {
+      list-style: none;
+      padding: 16px;
+      border-radius: 12px;
+      background: #1f1f1f;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    li.song:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(255,121,198,0.3);
+    }
+    li.song h2 {
+      margin: 0;
+      font-size: 18px;
       color: #fff;
     }
-    .small { font-size:13px; opacity:0.85; margin-top:8px;}
+    li.song p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    .center {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #aaa;
+      padding: 20px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 12px;
+      font-size: 0.9rem;
+      background: #111;
+      color: #888;
+      margin-top: auto;
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top: 4px solid #ff79c6;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 30px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>🌟 Welcome to Starlight Karaoke</h1>
-    <p class="lead">Pick an artist or a song — then click <strong>Enter Song List</strong>.</p>
 
-    <div class="controls" role="group" aria-label="song and artist controls">
-      <!-- Artist dropdown -->
-      <label style="display:block;">
-        <select id="artistSelect" aria-label="Choose an artist">
-          <option value="">-- All artists --</option>
-        </select>
-      </label>
-
-      <!-- Song dropdown -->
-      <label style="display:block;">
-        <select id="songSelect" aria-label="Choose a song">
-          <option value="">-- Select a song --</option>
-        </select>
-      </label>
-
-      <button id="enterBtn">Enter Song List</button>
-    </div>
-
-    <div id="songDisplay" aria-live="polite">No selection yet.</div>
-    <div class="small">If your site still looks different, scroll down to the troubleshooting notes below.</div>
+  <!-- Welcome Screen -->
+  <div id="welcomeScreen">
+    <h1>🎤 Welcome to Starlight Karaoke 🎶</h1>
+    <p>Click below to explore the full song list and get ready to sing!</p>
+    <button id="enterButton">Enter Song List</button>
   </div>
 
+  <!-- Main Container -->
+  <div id="mainContainer">
+    <h1>Starlight Karaoke Song List</h1>
+    <div id="controls">
+      <input type="text" id="searchInput" placeholder="Search by song or artist...">
+      <select id="genreFilter"></select>
+    </div>
+    <ul id="songList">
+      <div class="spinner"></div>
+    </ul>
+  </div>
+
+  <footer>Made with ❤️ by Starlight Karaoke</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
-    // ---------- Replace this sample list with your real data if needed ----------
-    // Make sure there are no trailing commas or smart quotes in your real data.
-    let songs = [
-      { title: "Someone Like You", artist: "Adele" },
-      { title: "Rolling in the Deep", artist: "Adele" },
-      { title: "Shape of You", artist: "Ed Sheeran" },
-      { title: "Perfect", artist: "Ed Sheeran" },
-      { title: "Bad Romance", artist: "Lady Gaga" },
-      { title: "Shallow", artist: "Lady Gaga" },
-      { title: "Blinding Lights", artist: "The Weeknd" },
-      { title: "Levitating", artist: "Dua Lipa" },
-      { title: "Happier", artist: "Marshmello" },
-      { title: "Senorita", artist: "Shawn Mendes" }
-    ];
-    // -------------------------------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTolM1gw_aADMSzbb-nMyJTCj2yBxbqmUgJ_CYWPuIyXXAnOide38qpGmTAjwjHA1QaVwKW5l7HfID9/pub?gid=0&single=true&output=csv";
 
-    const artistSelect = document.getElementById('artistSelect');
-    const songSelect = document.getElementById('songSelect');
-    const enterBtn = document.getElementById('enterBtn');
-    const display = document.getElementById('songDisplay');
+      const welcomeScreen = document.getElementById("welcomeScreen");
+      const mainContainer = document.getElementById("mainContainer");
+      const songList = document.getElementById("songList");
+      const searchInput = document.getElementById("searchInput");
+      const genreFilter = document.getElementById("genreFilter");
+      const enterButton = document.getElementById("enterButton");
 
-    function uniqueArtists(list) {
-      return Array.from(new Set(list.map(s => s.artist))).sort((a,b) => a.localeCompare(b));
-    }
+      let songs = [];
+      let currentGenre = "all";
 
-    function populateArtists() {
-      artistSelect.innerHTML = '<option value="">-- All artists --</option>';
-      const artists = uniqueArtists(songs);
-      artists.forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a;
-        opt.textContent = a;
-        artistSelect.appendChild(opt);
-      });
-    }
+      const escapeHtml = (str = "") => str.replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[c]));
 
-    function populateSongs(filterArtist = '') {
-      songSelect.innerHTML = '<option value="">-- Select a song --</option>';
-      const list = filterArtist ? songs.filter(s => s.artist === filterArtist) : songs;
-      list.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.title;
-        opt.textContent = s.title;
-        songSelect.appendChild(opt);
-      });
-    }
-
-    // When user picks an artist, filter songs
-    artistSelect.addEventListener('change', (e) => {
-      const artist = e.target.value;
-      populateSongs(artist);
-      // If artist cleared, keep song cleared
-      songSelect.value = '';
-      display.textContent = artist ? `Showing songs by ${artist}.` : 'Showing all songs.';
-    });
-
-    // When user picks a song, auto-select its artist
-    songSelect.addEventListener('change', (e) => {
-      const title = e.target.value;
-      if (!title) return;
-      const found = songs.find(s => s.title === title);
-      if (found) {
-        // Set artist select and ensure the song remains visible & selected
-        artistSelect.value = found.artist;
-        populateSongs(found.artist);
-        songSelect.value = title;
-        display.textContent = `🎤 Selected: "${found.title}" — ${found.artist}`;
+      function renderGenreOptions() {
+        const genreMap = new Map();
+        songs.forEach(({ genre }) => {
+          if (!genre) return;
+          const clean = genre.trim();
+          const key = clean.toLowerCase();
+          if (!genreMap.has(key)) genreMap.set(key, clean);
+        });
+        const uniqueGenres = Array.from(genreMap.values())
+          .sort((a,b)=> a.toLowerCase().localeCompare(b.toLowerCase()));
+        genreFilter.innerHTML = '<option value="all">All Genres</option>';
+        uniqueGenres.forEach(g=>{
+          const opt = document.createElement("option");
+          opt.value = g.toLowerCase();
+          opt.textContent = g;
+          genreFilter.appendChild(opt);
+        });
+        genreFilter.value = currentGenre || "all";
       }
-    });
 
-    // Enter button: show final result
-    enterBtn.addEventListener('click', () => {
-      const s = songSelect.value;
-      const a = artistSelect.value;
-      if (s) {
-        const found = songs.find(x => x.title === s);
-        display.textContent = `🎤 You chose: "${found.title}" by ${found.artist}`;
-      } else if (a) {
-        const list = songs.filter(x => x.artist === a).map(x => '- ' + x.title).join('<br>');
-        display.innerHTML = `🎶 Songs by ${a}:<br>${list}`;
-      } else {
-        display.textContent = "Please select an artist or a song before entering.";
+      function renderSongs(query="") {
+        songList.innerHTML = ""; // clear spinner
+        const q = query.toLowerCase().trim();
+        const filtered = songs.filter(({title, artist, genre}) => 
+          title && (currentGenre==="all" || (genre||"").toLowerCase()===currentGenre) &&
+          (title.toLowerCase().includes(q) || (artist||"").toLowerCase().includes(q))
+        );
+
+        if(!filtered.length){
+          songList.innerHTML = `<li class="center">No songs found</li>`;
+          return;
+        }
+
+        filtered.forEach(({title, artist})=>{
+          const li = document.createElement("li");
+          li.className = "song";
+          li.innerHTML = `<h2>${escapeHtml(title)}</h2>
+                          <p>by ${escapeHtml(artist||"Unknown")}</p>`;
+          songList.appendChild(li);
+        });
       }
-    });
 
-    // Initialize on DOM ready
-    window.addEventListener('DOMContentLoaded', () => {
-      // If you load songs from a server, assign to "songs" before calling these.
-      populateArtists();
-      populateSongs();
-      console.log('Starlight Karaoke initialized — songs:', songs.length);
-    });
+      function fetchSongs(){
+        songList.innerHTML = `<div class="spinner"></div>`;
+        Papa.parse(sheetURL, {
+          download: true,
+          skipEmptyLines: true,
+          complete: ({ data })=>{
+            const rows = data.slice(1); // skip header
+            songs = rows.map(([title, artist, genre])=>({
+              title: title?.trim().replace(/^\uFEFF/,"")||"",
+              artist: artist?.trim()||"",
+              genre: genre?.trim()||""
+            })).filter(({title})=> title);
 
-    // If you load songs externally, use this pattern:
-    // fetch('/path/to/songs.json')
-    //  .then(r => r.json())
-    //  .then(data => { songs = data; populateArtists(); populateSongs(); });
+            renderGenreOptions();
+            renderSongs(searchInput.value);
+          }
+        });
+      }
+
+      searchInput.addEventListener("input", e=>renderSongs(e.target.value));
+      genreFilter.addEventListener("change", e=>{
+        currentGenre = e.target.value||"all";
+        renderSongs(searchInput.value);
+      });
+
+      enterButton.addEventListener("click", ()=>{
+        welcomeScreen.style.opacity = "0";
+        setTimeout(()=>{
+          welcomeScreen.style.display = "none";
+          mainContainer.style.display = "block";
+          setTimeout(()=> mainContainer.classList.add("visible"), 50);
+          fetchSongs();
+          setInterval(fetchSongs, 30000);
+        },600);
+      });
+    });
   </script>
 </body>
 </html>
